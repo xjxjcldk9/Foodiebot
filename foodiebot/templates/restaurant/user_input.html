@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block header %}
+<h1>{% block title %}請輸入資訊{% endblock %}</h1>
+{% endblock %}
+
+
+{% block content %}
+<form method="post">
+    <label for="place">經緯度</label>
+    <input name="place" id="place" value="(23.97765, 120.68414)" required>
+
+    <label for="distance">希望距離(公里)</label>
+    <input name="distance" id="distance" value="0.2">
+
+    <label for="money">想吃貴的</label>
+    <input name="money" id="money" value="0">
+
+    {% if not result %}
+    <input type="submit" value="尋找餐廳!">
+    {% endif%}
+</form>
+
+{% if result %}
+<article class="post">
+    <header>
+        <div>
+            <p>店家名字：{{ result['name'] }}</p>
+            <p>評價：{{ result['star'] }}</p>
+            <p>種類：{{ result['category'] }}</p>
+            <p>距離：{{ result['distance'] }} 公里</p>
+        </div>
+    </header>
+
+    <a class="action" href="{{ url_for('restaurant.clear_session') }}">我要重新抽籤</a>
+</article>
+{% endif %}
+
+{% endblock %}
