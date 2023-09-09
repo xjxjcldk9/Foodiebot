@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+
+{% block header %}
+
+<h1>{% block title %}就是吃這個{% endblock %}</h1>
+
+{% endblock %}
+
+
+{% block content %}
+
+<iframe width="60%" height="450" style="border:0" loading="lazy" allowfullscreen
+    referrerpolicy="no-referrer-when-downgrade" src="https://www.google.com/maps/embed/v1/place?key=AIzaSyAd5FeE-Wb0Bc9r2uHPZngmVuOIi1cYJT8
+    &q={{session['result']['name']}}&language=ZH-TW">
+</iframe>
+
+
+<a href="{{ url_for('restaurant.user_input') }}">重新決定！</a>
+<a href="{{ url_for('restaurant.user_input') }}">問題回報！</a>
+
+
+
+
+
+
+{% endblock %}

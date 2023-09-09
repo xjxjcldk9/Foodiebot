@@ -7,6 +7,8 @@ import pandas as pd
 import numpy as np
 import googlemaps
 import functools
+import json
+import re
 
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for
@@ -33,30 +35,28 @@ def user_input():
     error = None
     if request.method == 'POST':
 
-        lat = request.form['place']
-        distance = request.form['distance']
-        money = request.form['money']
-
-        error = None
-
-        params = {'lat': eval(lat),
-                  'user_id': g.user['id'],
-                  'money': eval(money),
-                  'manypeople': 0,
-                  'radius': eval(distance),
-                  }
-
-        if not check_input_valid(params):
-            error = '經緯度錯誤'
-
-        if error is None and session['token'] == True:
-            session['result'] = choose_restaurant(params)
-            session['token'] = False
-
         if error is not None:
             flash(error)
 
-    return render_template('restaurant/user_input.html', result=session['result'])
+        else:
+
+            location_json = request.form['location']
+            location = [float(s)
+                        for s in re.findall(r'-?\d+.?\d*', location_json)]
+            # location = tuple(location)
+            params = {'lat': location,
+                      'user_id': session['user_id']}
+
+            session['result'] = choose_restaurant(params)
+
+            return redirect(url_for("restaurant.show_result"))
+
+    return render_template('restaurant/user_input.html')
+
+
+@bp.route('/result')
+def show_result():
+    return render_template('restaurant/show_result.html')
 
 
 @bp.route('/clearing')
@@ -99,7 +99,7 @@ def calculate_distance(lat, place):
 
 class user:
     def __init__(self, user_id, lat=None,
-                 money=1, manypeople=0, radius=2, rating=3.5,  manual=None,
+                 money=0, manypeople=0, radius=0.5, rating=3.5,  manual=None,
                  now_hour=datetime.now().hour, now_month=datetime.now().month, open=False):
 
         self.categories = None
@@ -196,7 +196,7 @@ class user:
         '''
         回傳搜尋類別以及結果
         '''
-        for category in self.categories:
+        for category in self.categories[:10]:
 
             params = {
                 'query': category,
@@ -236,19 +236,21 @@ def choose_restaurant(params):
 
     use = user(**params)
     use.get_categories()
-    # use.choose_food()
+    use.choose_food()
+
+    # return {
+    #    'category': np.random.random(),
+    #    'name': np.random.random(),
+    #    'star': np.random.random(),
+    #    'distance': np.random.random()
+    # }
+    if use.restaurant_information is None:
+        return "請將距離調大，或調整起始位置"
 
     return {
-        'category': np.random.random(),
-        'name': np.random.random(),
-        'star': np.random.random(),
-        'distance': np.random.random()
-    }
-
-    return {
-        # 'category': use.category,
-        # 'name': use.restaurant_information['name'],
-        # 'star': use.restaurant_information['rating'],
-        # 'distance': calculate_distance(
-        #    use.lat, use.restaurant_information['geometry']['location'])
+        'category': use.category,
+        'name': use.restaurant_information['name'],
+        'star': use.restaurant_information['rating'],
+        'distance': calculate_distance(
+            use.lat, use.restaurant_information['geometry']['location']),
     }

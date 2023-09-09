@@ -64,6 +64,7 @@ def login():
             # 給抽籤權
             session['token'] = True
             session['result'] = []
+
             return redirect(url_for('restaurant.user_input'))
 
         flash(error)
