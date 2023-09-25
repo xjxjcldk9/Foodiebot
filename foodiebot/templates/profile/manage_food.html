@@ -42,8 +42,9 @@
     <div class="panel">
 
         <div class="dropzone_name">
-            <h2>卡片庫 <button id="add_food">+</button></h2>
+            <h2>卡片庫 <button class="button-xsmall pure-button" id="add_food">新增卡片</button></h2>
         </div>
+
 
         <div class="dropzone" id="foodSource"></div>
 
@@ -139,11 +140,11 @@
         </div>
         {%endfor%}
         {%endfor%}
-
+        <div class="trash"><i class="fa-solid fa-trash-can"></i></div>
     </div>
 </div>
 
-<div class="trash">垃圾桶</div>
+<br>
 <button id="save">儲存變更</button>
 <a class="button-warning pure-button" href="{{ url_for('profile.black_list') }}">管理黑名單</a>
 

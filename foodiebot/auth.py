@@ -48,8 +48,8 @@ def login():
                 'SELECT * FROM default_food'
             ).fetchall()
 
-            A = default_food[:len(default_food)//2]
-            B = default_food[len(default_food)//2:]
+            A = default_food[:len(default_food)-10]
+            B = default_food[-10:]
 
             for food in A:
                 db.execute(
@@ -82,8 +82,7 @@ def login():
             session['user_id'] = user['id']
             session['user_name'] = user['username']
 
-            # 給抽籤權
-            session['token'] = True
+            # 一些儲存的東西
             session['result'] = []
 
             return redirect(url_for('restaurant.user_input'))

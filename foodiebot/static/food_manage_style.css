@@ -6,26 +6,28 @@
 
 .dropzone {
     width: 85%;
-    height: 90%;
+    height: 60px;
     background: rgba(255, 166, 0, 0.654);
     margin: 10px;
-    padding: 5px;
+    padding: 10px;
     border: 1px solid #ddd;
-    min-height: 300px;
+
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
     display: flex;
+    overflow: auto;
 }
 
 
 .trash {
-    width: 50px;
-    height: 50px;
-    background: rgba(247, 116, 90, 0.654);
+    width: 100px;
+    height: 60px;
+    background: rgba(241, 90, 60, 0.654);
     margin: 10px;
     padding: 5px;
     border: 1px solid #ddd;
-    min-height: 300px;
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    text-align: center;
 }
 
 .trash.dragover {
@@ -64,40 +66,37 @@
 
 
 .dropzone_name {
-    padding: 5px;
-    margin: 10px;
+    padding: 2px;
+    margin: 5px;
     text-align: center;
     background: #1abc9c;
     color: white;
-    font-size: 30px;
-    width: 85%;
+    font-size: 15px;
+    font-weight: 300;
+    width: 20em;
+    height: 5em;
 }
 
 .panel {
-    width: 85%;
-    height: 40%;
+    width: auto;
+    height: auto;
     margin: 0 auto;
     padding: 10px;
-    border: 8px solid #f7f7f7;
-
+    display: flex;
 }
 
 
 
 .edit {
-    background: rgba(255, 166, 0, 0.654);
-    width: 85%;
-    height: 90%;
-    background: rgba(255, 166, 0, 0.654);
+    background: rgba(46, 216, 205, 0.654);
+    width: 30%;
+    height: auto;
     margin: 10px;
     padding: 5px;
     border: 1px solid #ddd;
-    min-height: 300px;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.868);
 
 }
-
-
 
 
 .edit .draggable_block {

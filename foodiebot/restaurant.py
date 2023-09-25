@@ -29,7 +29,7 @@ def check_input_valid(inputs):
 
 @bp.route('/choose_restaurant', methods=('GET', 'POST'))
 def user_input():
-
+    session['filled'] = False
     error = None
     if request.method == 'POST':
 
@@ -66,7 +66,7 @@ def user_input():
             else:
                 params['user_id'] = session['user_id']
 
-            if search is not '':
+            if search != '':
                 params['manual'] = search
 
             session['result'] = choose_restaurant(params)
@@ -76,15 +76,38 @@ def user_input():
     return render_template('restaurant/user_input.html')
 
 
-@bp.route('/result')
+@bp.route('/result', methods=('GET', 'POST'))
 def show_result():
-    return render_template('restaurant/show_result.html')
+    db = get_db()
+
+    filling = db.execute(
+        'SELECT * FROM response'
+        ' WHERE user_id = ?'
+        ' AND restaurant = ?',
+        (session['user_id'], session['result']['name'])
+    ).fetchone()
+    if filling:
+        filled = True
+    else:
+        filled = False
+
+    if request.method == 'POST':
+
+        db.execute(
+            'INSERT INTO response (ts, user_id, category, restaurant, response) VALUES (CURRENT_TIMESTAMP,?, ?,?,?)',
+            (session['user_id'], session['result']['category'],
+             session['result']['name'], request.form['response'])
+        )
+        db.commit()
+        return redirect(url_for('restaurant.show_result'))
+
+    return render_template('restaurant/show_result.html', filled=filled)
 
 
 @bp.route('/clearing')
 @login_required
 def clear_session():
-    session['token'] = True
+
     session['result'] = []
     # can do some pow
 
