@@ -3,17 +3,25 @@ let marker;
 let geocoder;
 let responseDiv;
 let response;
+let cityCircle;
+
+let editable = false;
+
+if (login) {
+    editable = true;
+}
+
 
 function initMap() {
     map = new google.maps.Map(document.getElementById("map"), {
         center: { lat: 25.04625, lng: 121.51753 },
-        zoom: 17,
+        zoom: 15,
     });
     infoWindow = new google.maps.InfoWindow();
 
     const locationButton = document.createElement("button");
 
-    locationButton.textContent = "裝置目前位置";
+    locationButton.textContent = "目前位置";
     locationButton.classList.add("custom-map-control-button");
     map.controls[google.maps.ControlPosition.RIGHT_TOP].push(locationButton);
     locationButton.addEventListener("click", () => {
@@ -25,12 +33,6 @@ function initMap() {
                         lat: position.coords.latitude,
                         lng: position.coords.longitude,
                     };
-                    /*
-                    infoWindow.setPosition(pos);
-                    infoWindow.setContent("你在這裡");
-                    infoWindow.open(map);
-                    map.setCenter(pos);
-                    */
 
                     geocode({ location: pos });
                     map.setCenter(pos);
@@ -45,12 +47,19 @@ function initMap() {
         }
     });
 
+
+
+
+
     geocoder = new google.maps.Geocoder();
 
     const inputText = document.createElement("input");
 
+
+
     inputText.type = "text";
     inputText.placeholder = "搜尋地點";
+
 
     const submitButton = document.createElement("input");
 
@@ -63,42 +72,63 @@ function initMap() {
     clearButton.type = "button";
     clearButton.value = "清除地點";
     clearButton.classList.add("button", "button-secondary");
-    response = document.createElement("pre");
-    response.id = "response";
-    response.innerText = "";
 
-    responseDiv = document.createElement("div");
-    responseDiv.id = "response-container";
-    responseDiv.appendChild(response);
 
-    const instructionsElement = document.createElement("p");
 
-    /*
-    instructionsElement.id = "instructions";
-    instructionsElement.innerHTML =
-        "<strong>Instructions</strong>: Enter an address in the textbox to geocode or click on the map to reverse geocode.";
-        */
+
     map.controls[google.maps.ControlPosition.TOP_LEFT].push(inputText);
     map.controls[google.maps.ControlPosition.TOP_LEFT].push(submitButton);
     map.controls[google.maps.ControlPosition.TOP_LEFT].push(clearButton);
-    map.controls[google.maps.ControlPosition.LEFT_TOP].push(instructionsElement);
 
 
-    //map.controls[google.maps.ControlPosition.LEFT_TOP].push(responseDiv);
+
     marker = new google.maps.Marker({
         map,
     });
+
+    cityCircle = new google.maps.Circle({
+        strokeColor: "#FF0000",
+        strokeOpacity: 0.8,
+        strokeWeight: 2,
+        fillColor: "#FF0000",
+        fillOpacity: 0.35,
+        map: map,
+        editable: editable,
+        draggable: true,
+        radius: 500,
+    });
+
+
+    cityCircle.addListener("radius_changed", () => {
+        radius = cityCircle.getRadius();
+    });
+
+
+    cityCircle.addListener("center_changed", () => {
+        marker.setPosition(cityCircle.getCenter());
+    });
+
+
     map.addListener("click", (e) => {
         geocode({ location: e.latLng });
+        cityCircle.setCenter(e.latLng);
     });
-    submitButton.addEventListener("click", () =>
-        geocode({ address: inputText.value }),
+
+
+    marker.addListener("position_changed", () => {
+        myLocation = marker.getPosition();
+    });
+
+
+    submitButton.addEventListener("click", () => {
+        geocode({ address: inputText.value });
+    }
     );
     clearButton.addEventListener("click", () => {
         clear();
+        cityCircle.setCenter(null);
     });
     clear();
-
 }
 
 
@@ -114,8 +144,7 @@ function handleLocationError(browserHasGeolocation, infoWindow, pos) {
 
 
 function clear() {
-    marker.setMap(null);
-    responseDiv.style.display = "none";
+    marker.setPosition(null);
 }
 
 function geocode(request) {
@@ -124,16 +153,9 @@ function geocode(request) {
         .geocode(request)
         .then((result) => {
             const { results } = result;
-
-            //map.setCenter(results[0].geometry.location);
-
-            //經緯度資訊在此
-            marker.setPosition(results[0].geometry.location);
-            marker.setMap(map);
-            responseDiv.style.display = "block";
-            response.innerText = JSON.stringify(result, null, 2);
-            myLocation = JSON.stringify(results[0].geometry.location);
-            return results;
+            const position = results[0].geometry.location;
+            map.setCenter(position);
+            cityCircle.setCenter(position);
         })
         .catch((e) => {
             alert("Geocode was not successful for the following reason: " + e);
@@ -141,3 +163,8 @@ function geocode(request) {
 }
 
 window.initMap = initMap;
+
+
+
+
+

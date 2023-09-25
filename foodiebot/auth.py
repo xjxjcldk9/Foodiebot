@@ -1,4 +1,5 @@
 import functools
+import numpy as np
 
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for
@@ -7,59 +8,79 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from foodiebot.db import get_db
 
+import jwt
+
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 
-@bp.route('/register', methods=('GET', 'POST'))
-def register():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-
-        db = get_db()
-        error = None
-
-        if not username:
-            error = 'Username is required.'
-        elif not password:
-            error = 'Password is required.'
-
-        if error is None:
-            try:
-                db.execute(
-                    "INSERT INTO user (username, password) VALUES (?, ?)",
-                    (username, generate_password_hash(password)),
-                )
-                db.commit()
-            except db.IntegrityError:
-                error = f"User {username} is already registered."
-            else:
-                return redirect(url_for("auth.login"))
-
-        flash(error)
-
-    return render_template('auth/register.html')
+# 這邊需要更改
 
 
 @bp.route('/login', methods=('GET', 'POST'))
 def login():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
+        first = True
         db = get_db()
         error = None
+
+        users = jwt.decode(request.form['credential'], options={
+                           "verify_signature": False})
+
+        # I can have name, email
+        try:
+            db.execute(
+                "INSERT INTO user (username, email) VALUES (?, ?)",
+                (users["name"], users["email"]),
+            )
+            db.commit()
+
+        except db.IntegrityError:
+            first = False
+            pass
+
         user = db.execute(
-            'SELECT * FROM user WHERE username = ?', (username,)
+            'SELECT * FROM user WHERE email = ?', (users["email"],)
         ).fetchone()
 
-        if user is None:
-            error = 'Incorrect username.'
-        elif not check_password_hash(user['password'], password):
-            error = 'Incorrect password.'
+        # 初次登陸，將default_food複製到custom_food_onboard
+        if first:
+            default_food = db.execute(
+                'SELECT * FROM default_food'
+            ).fetchall()
+
+            A = default_food[:len(default_food)//2]
+            B = default_food[len(default_food)//2:]
+
+            for food in A:
+                db.execute(
+                    "INSERT INTO custom_food_onboard (category, singlepeople, manypeople, cheap, expensive, breakfast, lunch, dinner, night, ordinary, hot, cold, user_id) VALUES (?, ?,?,?,?,?,?,?,?,?,?,?,?)",
+                    (food["category"], food["singlepeople"], food["manypeople"], food["cheap"], food['expensive'], food["breakfast"], food["lunch"], food["dinner"],
+                     food["night"], food["ordinary"], food["hot"], food["cold"], user['id']),
+                )
+                db.commit()
+            for food in B:
+                db.execute(
+                    "INSERT INTO custom_food_reserve (category, singlepeople, manypeople, cheap, expensive, breakfast, lunch, dinner, night, ordinary, hot, cold, user_id) VALUES (?, ?,?,?,?,?,?,?,?,?,?,?,?)",
+                    (food["category"], food["singlepeople"], food["manypeople"], food["cheap"], food['expensive'], food["breakfast"], food["lunch"], food["dinner"],
+                     food["night"], food["ordinary"], food["hot"], food["cold"], user['id']),
+                )
+                db.commit()
+
+            default_black_list = db.execute(
+                'SELECT * FROM default_black_list'
+            ).fetchall()
+
+            for black in default_black_list:
+                db.execute(
+                    'INSERT INTO custom_black_list (name, user_id) VALUES (?,?)',
+                    (black['name'], user['id'])
+                )
+                db.commit()
 
         if error is None:
             session.clear()
             session['user_id'] = user['id']
+            session['user_name'] = user['username']
 
             # 給抽籤權
             session['token'] = True
@@ -87,7 +108,7 @@ def load_logged_in_user():
 @bp.route('/logout')
 def logout():
     session.clear()
-    return redirect(url_for('auth.register'))
+    return redirect('/')
 
 
 def login_required(view):

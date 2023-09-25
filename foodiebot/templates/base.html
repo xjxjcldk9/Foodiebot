@@ -1,18 +1,58 @@
 <!doctype html>
+
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/pure-min.css"
+        integrity="sha384-X38yfunGUhNzHpBaEBsWLO+A0HDYOQi8ufWDkZ0k9e0eXz/tH3II7uKZ9msv++Ls" crossorigin="anonymous">
+
+    <script src="https://kit.fontawesome.com/86a5869bb1.js" crossorigin="anonymous"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+
+
+
+    <script src="https://accounts.google.com/gsi/client" async></script>
+
+</head>
+
+
+
+
 <title>{% block title %}{% endblock %} - Foodiebot</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+
+
+
+
 
 
 
 <nav>
-    <h1>Foodiebot</h1>
+    <h1><a href="{{ url_for('restaurant.user_input')}}">Foodiebot</a></h1>
     <ul>
-        {% if g.user %}
-        <li><span>{{ g.user['username'] }}</span>
-        <li><a href="{{ url_for('auth.logout') }}">Log Out</a>
+
+
+
+        {% if session['user_id'] %}
+
+        <li><span>{{ session['user_name'] }}</span>
+        <li><a href="{{ url_for('profile.manage_food') }}">管理食物</a>
+        <li><a href="{{ url_for('auth.logout') }}">登出</a>
+
+
             {% else %}
-        <li><a href="{{ url_for('auth.register') }}">Register</a>
-        <li><a href="{{ url_for('auth.login') }}">Log In</a>
+
+            <div id="g_id_onload"
+                data-client_id="503554671254-gma67bh8jthekvbe2ub2fqvn4tdudvaf.apps.googleusercontent.com"
+                data-context="signin" data-ux_mode="popup" data-login_uri="{{ url_for('auth.login') }}"
+                data-auto_prompt="false">
+            </div>
+
+
+            <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline"
+                data-text="signin_with" data-size="medium" data-logo_alignment="left">
+            </div>
+
             {% endif %}
     </ul>
 </nav>

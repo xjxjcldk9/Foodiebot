@@ -28,9 +28,7 @@ def check_input_valid(inputs):
 
 
 @bp.route('/choose_restaurant', methods=('GET', 'POST'))
-@login_required
 def user_input():
-    result = None
 
     error = None
     if request.method == 'POST':
@@ -43,9 +41,33 @@ def user_input():
             location_json = request.form['location']
             location = [float(s)
                         for s in re.findall(r'-?\d+.?\d*', location_json)]
-            # location = tuple(location)
+
+            radius = request.form['radius']
+
+            money_cheap = request.form['money_cheap']
+            money_expensive = request.form['money_expensive']
+            people_single = request.form['people_single']
+            people_multiple = request.form['people_multiple']
+            store_open = request.form['store_open']
+            store_either = request.form['store_either']
+            rating = float(request.form['rating'])
+
+            search = request.form['search']
+
             params = {'lat': location,
-                      'user_id': session['user_id']}
+                      'radius': float(radius) / 1000,
+                      'money': (money_cheap, money_expensive),
+                      'manypeople': (people_single, people_multiple),
+                      'open': (store_open, store_either),
+                      'rating': rating}
+
+            if not session.get('user_id'):
+                params['user_id'] = 1
+            else:
+                params['user_id'] = session['user_id']
+
+            if search is not '':
+                params['manual'] = search
 
             session['result'] = choose_restaurant(params)
 
@@ -73,17 +95,6 @@ api_key = os.environ['GOOGLEMAP_API_KEY']
 gmaps = googlemaps.Client(key=api_key)
 
 
-def check_white(category, name):
-    ''' 
-    手動排除不好的東西...有待改進...
-    '''
-
-    if category in ["水餃",  "鍋貼"]:
-        if "生水餃" or "冷凍" or "八方" in name:
-            return False
-    return True
-
-
 def calculate_distance(lat, place):
     r = 6371.0
 
@@ -98,18 +109,16 @@ def calculate_distance(lat, place):
 
 
 class user:
-    def __init__(self, user_id, lat=None,
-                 money=0, manypeople=0, radius=0.5, rating=3.5,  manual=None,
+    def __init__(self, money, manypeople, radius, rating, user_id, lat, manual=None,
                  now_hour=datetime.now().hour, now_month=datetime.now().month, open=False):
 
         self.categories = None
 
-        # 不吃類別
         self.user_id = user_id
 
         BL = get_db().execute(
             'SELECT name'
-            ' FROM black_list'
+            ' FROM custom_black_list'
             ' WHERE user_id = ?',
             (user_id,)
         ).fetchall()
@@ -126,11 +135,9 @@ class user:
         # 手動輸入類別，直接取代list,若有新東西，也可加入預設類別！
         self.manual = manual
 
-        # 要設計問題把東西問出來
         self.money = money
         self.manypeople = manypeople
 
-        # 有機車2, 走路0.5
         self.radius = radius
         self.rating = rating
 
@@ -144,9 +151,11 @@ class user:
         self.restaurant_information = None
 
     def get_categories(self):
-        '''
-        對搜尋類別進行限縮，直接從SQL資料庫撈
-        '''
+
+        def helper(text):
+            if text == 'true':
+                return 1
+            return 0
 
         # 處理時間
         if self.now_hour in range(10, 16):
@@ -170,20 +179,18 @@ class user:
 
         categories = get_db().execute(
             'SELECT f.category'
-            ' FROM food f'
-            ' WHERE ' + meal + '= 1'
+            ' FROM custom_food_onboard f'
+            ' WHERE user_id = ?'
+            ' AND ' + meal + '= 1'
             ' AND ' + temperature + '= 1'
-            ' AND money BETWEEN 0 AND ? AND'
-            ' manypeople BETWEEN 0 AND ? AND'
-            ' f.category NOT IN('
-            '  SELECT category FROM no_eat'
-            '  WHERE user_id = ?'
-            ' ) AND'
-            ' f.category NOT IN ('
-            '   SELECT category FROM last_eat'
-            '   WHERE user_id = ?'
-            ' );',
-            (self.money, self.manypeople, self.user_id, self.user_id)
+            ' AND ordinary = 1'
+            ' AND cheap = ?'
+            ' AND expensive = ?'
+            ' AND singlepeople = ?'
+            ' AND manypeople = ?;',
+            (self.user_id,
+             helper(self.money[0]), helper(self.money[1]),
+             helper(self.manypeople[0]), helper(self.manypeople[1]))
         ).fetchall()
 
         self.categories = [cat['category'] for cat in categories]
@@ -196,58 +203,86 @@ class user:
         '''
         回傳搜尋類別以及結果
         '''
-        for category in self.categories[:10]:
 
+        if self.money == ('true', 'false'):
+            min_price, max_price = (0, 2)
+        elif self.money == ('false', 'true'):
+            min_price, max_price = (2, 4)
+        else:
+            min_price, max_price = (0, 4)
+
+        if self.open == ('true', 'false'):
+            ifopen = True
+        else:
+            ifopen = False
+
+        def search_and_check(q):
             params = {
-                'query': category,
+                'query': q,
                 'location': self.lat,
                 'radius': self.radius * 1000,
                 'language': 'zh-TW',
-                'max_price': self.money+1,
-                'open_now': self.open
+                'min_price': min_price,
+                'max_price': max_price,
+                'open_now': ifopen
             }
 
-            result = gmaps.places(**params)
+            def black_name(name):
+                for black in self.black_list:
+                    if black in name:
+                        return False
+                return True
 
+            result = gmaps.places(**params)
             final_result = []
 
             # 過濾黑名單, 過濾評分太低
             for restaurant in result['results']:
                 if (restaurant['rating'] > self.rating and
-                    check_white(category, restaurant['name']) and
-                        restaurant['name'] not in self.black_list and
+                    black_name(restaurant['name']) and
                         calculate_distance(self.lat, restaurant['geometry']['location']) < self.radius):
-
-                    if not self.vegie and '素' in restaurant['name']:
-                        continue
 
                     # 檢查是否夠格
                     final_result.append(restaurant)
 
             m = len(final_result)
-            if m > 1:
-                self.category = category
+            if m > 0:
+                self.category = q
                 self.result = final_result
                 self.restaurant_information = np.random.choice(self.result)
-                break
+
+        if self.manual is None:
+            for category in self.categories[:10]:
+                search_and_check(category)
+                if self.category:
+                    break
+        else:
+            search_and_check(self.manual)
 
 
 def choose_restaurant(params):
 
     use = user(**params)
-    use.get_categories()
+
+    if not use.manual:
+        use.get_categories()
+
     use.choose_food()
 
     # return {
-    #    'category': np.random.random(),
-    #    'name': np.random.random(),
-    #    'star': np.random.random(),
-    #    'distance': np.random.random()
+    #    'test': use.categories,
+    #    'category': use.restaurant_information,
+
+    # 'name': np.random.random(),
+    # 'star': np.random.random(),
+    # 'distance': np.random.random()
     # }
+
     if use.restaurant_information is None:
         return "請將距離調大，或調整起始位置"
 
     return {
+        'check': use.categories,
         'category': use.category,
         'name': use.restaurant_information['name'],
         'star': use.restaurant_information['rating'],

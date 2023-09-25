@@ -1,96 +1,144 @@
 DROP TABLE IF EXISTS user;
-DROP TABLE IF EXISTS food;
-DROP TABLE IF EXISTS no_eat;
-DROP TABLE IF EXISTS last_eat;
-DROP TABLE IF EXISTS black_list;
+DROP TABLE IF EXISTS default_food;
+DROP TABLE IF EXISTS default_black_list;
+DROP TABLE IF EXISTS custom_black_list;
+DROP TABLE IF EXISTS custom_food_onboard;
+DROP TABLE IF EXISTS custom_food_reserve;
+
+
 
 
 CREATE TABLE user (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   username TEXT UNIQUE NOT NULL,
-  password TEXT NOT NULL
+  email TEXT UNIQUE NOT NULL
 );
 
 
-
-CREATE TABLE food(
+CREATE TABLE default_food(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     category TEXT UNIQUE NOT NULL,
-    manypeople INTEGER NOT NULL,
-    money INTEGER NOT NULL,
-    lunch INTEGER NOT NULL,
-    dinner INTEGER NOT NULL,
-    night INTEGER NOT NULL,
-    ordinary INTEGER NOT NULL,
-    hot INTEGER NOT NULL,
-    cold INTEGER NOT NULL
+    singlepeople INTEGER ,
+    manypeople INTEGER ,
+    cheap INTEGER ,
+    expensive INTEGER ,
+    breakfast INTEGER,
+    lunch INTEGER ,
+    dinner INTEGER ,
+    night INTEGER ,
+    ordinary INTEGER ,
+    hot INTEGER ,
+    cold INTEGER
 );
 
 
-INSERT INTO food
+INSERT INTO default_food (category, singlepeople, manypeople, cheap, expensive, breakfast, lunch, dinner, night, ordinary, hot, cold)
 VALUES
-(1, '牛肉麵', 0, 0, 1, 1, 0, 1, 1, 1),
-(2, '早餐', 0, 0, 1, 0, 0, 1, 1, 1),
-(3, '鍋燒麵', 0, 0, 1, 1, 0, 1, 1, 1),
-(4, '燒臘', 0, 0, 1, 1, 0, 1, 1, 1),
-(5, '永和豆漿', 0, 0, 0, 0, 1, 1, 1, 1),
-(6, '咖哩', 0, 1, 1, 1, 0, 1, 1, 1),
-(7, '粥', 0, 0, 1, 1, 1, 1, 0, 1),
-(8, '河粉', 0, 0, 1, 1, 0, 1, 1, 1),
-(9, '滷肉飯', 0, 0, 1, 1, 0, 1, 1, 1),
-(10, '便當', 0, 0, 1, 1, 0, 1, 1, 1),
-(11, '滷味', 0, 0, 0, 0, 1, 1, 1, 1),
-(12, '火鍋', 1, 1, 1, 1, 0, 1, 0, 1),
-(13, '牛排', 1, 1, 1, 1, 0, 1, 1, 1),
-(14, '燒肉', 1, 1, 0, 1, 0, 1, 0, 1),
-(15, '羊肉爐', 1, 1, 0, 1, 0, 0, 0, 1),
-(16, '麻油雞', 1, 1, 0, 1, 0, 0, 0, 1),
-(17, '薑母鴨', 1, 1, 0, 1, 0, 0, 0, 1),
-(18, '丼飯', 0, 1, 1, 1, 0, 1, 1, 1),
-(19, '拉麵', 0, 1, 1, 1, 0, 1, 1, 1),
-(20, '水餃', 0, 0, 1, 1, 0, 1, 1, 1),
-(21, '鍋貼', 0, 0, 1, 1, 0, 1, 1, 1),
-(22, '熱炒', 1, 1, 0, 1, 0, 1, 1, 1),
-(23, '豬腳飯', 0, 0, 1, 1, 0, 1, 1, 1),
-(24, '乾麵', 0, 0, 1, 1, 0, 1, 1, 1),
-(25, '海南雞', 0, 0, 1, 1, 0, 1, 1, 1),
-(26, '速食', 0, 0, 1, 1, 1, 1, 1, 0),
-(27, '涼麵', 0, 0, 1, 0, 1, 1, 1, 0),
-(28, '臭臭鍋', 0, 0, 1, 1, 0, 1, 1, 1),
-(29, 'pizza', 1, 1, 0, 1, 0, 1, 1, 1),
-(30, '自助餐', 0, 0, 1, 1, 0, 1, 1, 1),
-(31, 'poke', 0, 0, 1, 1, 0, 1, 1, 0),
-(32, '早午餐', 1, 1, 1, 0, 0, 1, 1, 1),
-(33, '豬排', 0, 1, 1, 1, 0, 1, 1, 1),
-(34, '宵夜', 0, 0, 0, 0, 1, 1, 1, 1),
-(35, '壽司', 1, 1, 1, 1, 0, 1, 1, 0),
-(36, '簡餐', 1, 1, 1, 1, 0, 1, 1, 1),
-(37, '日本料理', 1, 1, 1, 1, 0, 1, 1, 0),
-(38, '雞肉飯', 0, 0, 1, 1, 0, 1, 1, 1),
-(39, '晚餐', 0, 0, 0, 1, 0, 1, 1, 1)
+('牛肉麵',  1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1),
+('早餐',    1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1),
+('鍋燒麵',  1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1),
+('燒臘',    1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1),
+('永和豆漿', 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1)
 ;
 
+/*
+('咖哩', 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1),
+('粥', 0, 0, 0,1, 1, 1, 1, 0, 1),
+('河粉', 0, 0, 0,1, 1, 0, 1, 1, 1),
+('滷肉飯', 0, 0, 0,1, 1, 0, 1, 1, 1),
+('便當', 0, 0, 0,1, 1, 0, 1, 1, 1),
+('滷味', 0, 0, 0,0, 0, 1, 1, 1, 1),
+('火鍋', 1, 1, 0,1, 1, 0, 1, 0, 1),
+('牛排', 1, 1, 0,1, 1, 0, 1, 1, 1),
+('燒肉', 1, 1, 0,0, 1, 0, 1, 0, 1),
+('羊肉爐', 1, 1, 0,0, 1, 0, 0, 0, 1),
+('麻油雞', 1, 1, 0,0, 1, 0, 0, 0, 1),
+('薑母鴨', 1, 1, 0,0, 1, 0, 0, 0, 1),
+('丼飯', 0, 1, 0,1, 1, 0, 1, 1, 1),
+('拉麵', 0, 1, 0,1, 1, 0, 1, 1, 1),
+('水餃', 0, 0, 0,1, 1, 0, 1, 1, 1),
+('鍋貼', 0, 0, 0,1, 1, 0, 1, 1, 1),
+('熱炒', 1, 1, 0,0, 1, 0, 1, 1, 1),
+('豬腳飯', 0, 0, 0,1, 1, 0, 1, 1, 1),
+('乾麵', 0, 0, 0,1, 1, 0, 1, 1, 1),
+('海南雞', 0, 0, 0,1, 1, 0, 1, 1, 1),
+('速食', 0, 0, 0,1, 1, 1, 1, 1, 0),
+('涼麵', 0, 0, 0,1, 0, 1, 1, 1, 0),
+('臭臭鍋', 0, 0, 0,1, 1, 0, 1, 1, 1),
+('pizza', 1, 1, 0,0, 1, 0, 1, 1, 1),
+('自助餐', 0, 0, 0,1, 1, 0, 1, 1, 1),
+('poke', 0, 0, 0,1, 1, 0, 1, 1, 0),
+('早午餐', 1, 1,0, 1, 0, 0, 1, 1, 1),
+('豬排', 0, 1, 0,1, 1, 0, 1, 1, 1),
+('宵夜', 0, 0, 0,0, 0, 1, 1, 1, 1),
+('壽司', 1, 1,0, 1, 1, 0, 1, 1, 0),
+('簡餐', 1, 1, 0,1, 1, 0, 1, 1, 1),
+('日本料理', 1, 1,0, 1, 1, 0, 1, 1, 0),
+('雞肉飯', 0, 0,0, 1, 1, 0, 1, 1, 1),
+('晚餐', 0, 0,0, 0, 1, 0, 1, 1, 1)
+*/
 
 
 
-CREATE TABLE no_eat(
-id INTEGER PRIMARY KEY AUTOINCREMENT,
-user_id INTEGER NOT NULL,
-category TEXT UNIQUE NOT NULL,
-FOREIGN KEY (user_id) REFERENCES user (id)
+CREATE TABLE custom_food_reserve(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    category TEXT UNIQUE NOT NULL,
+    singlepeople INTEGER ,
+    manypeople INTEGER ,
+    cheap INTEGER ,
+    expensive INTEGER ,
+    breakfast INTEGER,
+    lunch INTEGER ,
+    dinner INTEGER ,
+    night INTEGER ,
+    ordinary INTEGER ,
+    hot INTEGER ,
+    cold INTEGER,
+    user_id INTEGER NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES user (id)
 );
 
 
 
-CREATE TABLE last_eat(
-id INTEGER PRIMARY KEY AUTOINCREMENT,
-user_id INTEGER NOT NULL,
-category TEXT UNIQUE NOT NULL,
-FOREIGN KEY (user_id) REFERENCES user (id)
+
+CREATE TABLE custom_food_onboard(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    category TEXT UNIQUE NOT NULL,
+    singlepeople INTEGER ,
+    manypeople INTEGER ,
+    cheap INTEGER ,
+    expensive INTEGER ,
+    breakfast INTEGER,
+    lunch INTEGER ,
+    dinner INTEGER ,
+    night INTEGER ,
+    ordinary INTEGER ,
+    hot INTEGER ,
+    cold INTEGER,
+    user_id INTEGER NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES user (id)
 );
 
 
-CREATE TABLE black_list(
+
+
+CREATE TABLE default_black_list(
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+name TEXT UNIQUE NOT NULL
+);
+
+INSERT INTO default_black_list (name)
+VALUES
+('八方雲集'),
+('星巴克'),
+('路易莎'),
+('麥當勞'),
+('生水餃'),
+('冷凍'),
+('素')
+;
+
+CREATE TABLE custom_black_list(
 id INTEGER PRIMARY KEY AUTOINCREMENT,
 user_id INTEGER NOT NULL,
 name TEXT UNIQUE NOT NULL,

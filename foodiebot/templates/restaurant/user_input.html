@@ -1,11 +1,32 @@
 <head>
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
-    <script type="module" src="{{url_for('static', filename='index.js')}}">
+
+    <script>
+        {% if not session['user_id'] %}
+        let login = false;
+        {%else %}
+        let login = true;
+        {% endif %}
+
+        let myLocation;
+        let radius = 500;
+
+        const url = {{ url_for('restaurant.user_input') | tojson}};
     </script>
 
+
+
+    <script defer src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+    <script defer type="module" src="{{url_for('static', filename='map.js')}}"></script>
+
+    <script
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAd5FeE-Wb0Bc9r2uHPZngmVuOIi1cYJT8&callback=initMap&v=weekly&language=ZH-TW"
+        defer>
+        </script>
+
+
+    <script defer type="module" src="{{url_for('static', filename='parameters.js')}}"></script>
+
 </head>
-
-
 
 
 {% extends 'base.html' %}
@@ -13,57 +34,81 @@
 
 {% block header %}
 
-<h1>{% block title %}選擇地點{% endblock %}</h1>
+<h1>{% block title %}
+    {% if not session['user_id'] %}
+    訪客模式
+    {% else %}
+    登入模式
+    {% endif %}
+    {% endblock %}</h1>
 
 {% endblock %}
 
 
 {% block content %}
+{% if not session['user_id'] %}
+<p>登入後有更多功能！</p>
+{%else %}
+<p></p>
+{% endif %}
 
 
-<script> var myLocation;</script>
+
 
 <div id="map"></div>
 
 
-<script
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAd5FeE-Wb0Bc9r2uHPZngmVuOIi1cYJT8&callback=initMap&v=weekly&language=ZH-TW"
-    defer>
-    </script>
+
+<p></p>
+
+
+<button class="pure-button" id="otherparamsButton">其他參數</button>
+<button class="pure-button" id="advancedButton">進階搜尋</button>
+
+
+<button class="pure-button pure-button-primary" id="postButton">抽抽！</button>
+
+
+
+<form class="pure-form" id="advancedsearch">
+    <fieldset>
+        <input type="keyword" id="manual" placeholder="想搜尋的類別" />
+    </fieldset>
+</form>
 
 
 <p></p>
 
 
 
-<button id="postButton">確定地點</button>
-<script>
-    const url = {{ url_for('restaurant.user_input') | tojson}};
+<div id="otherparams">
+    <div class="division">
+        <i class="fa-solid fa-coins "></i>
+        <input type="checkbox" id="money_cheap" checked>
+        <label for="money_cheap">便宜的</label>
+        <input type="checkbox" id="money_expensive">
+        <label for="money_expensive">貴的</label>
+    </div>
+    <div class="division">
+        <i class="fa-solid fa-people-group"></i>
+        <input type="checkbox" id="people_single" checked>
+        <label for="checkbox">自己吃</label>
+        <input type="checkbox" id="people_multiple">
+        <label for="checkbox">多人吃</label>
+    </div>
 
-    document.addEventListener('DOMContentLoaded', function () {
-        const postButton = document.getElementById('postButton');
-        postButton.addEventListener('click', () => {
-
-            let data = new FormData;
-            data.append("location", JSON.stringify(myLocation))
-
-            fetch(url, {
-                "method": "POST",
-                "body": data,
-            }).then(
-                response => {
-                    if (response.redirected) {
-                        window.location = response.url
-                    } else {
-                        alert("請選擇地點!")
-                    }
-                }
-            );
-        });
-    });
-
-</script>
-
+    <div class="division">
+        <i class="fa-solid fa-store"></i>
+        <input type="checkbox" id="store_open">
+        <label for="checkbox">一定現在開門</label>
+        <input type="checkbox" id="store_either" checked>
+        <label for="checkbox">現在關門也行</label>
+    </div>
+    <div class="division">
+        <i class="fa-solid fa-star"></i>
+        <input id="rating_bar" type="range" min="3" max="4.5" value="3.5" step="0.1" /> <output id="rating"></output>星以上
+    </div>
+</div>
 
 
 

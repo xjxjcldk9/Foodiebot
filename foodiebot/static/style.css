@@ -1,6 +1,6 @@
 html {
-    font-family: sans-serif;
-    background: #eee;
+    font-family: monospace;
+    background: #D4F3FC;
     padding: 1rem;
 }
 
@@ -12,21 +12,21 @@ body {
 
 h1 {
     font-family: serif;
-    color: #377ba8;
+    color: black;
     margin: 1rem 0;
 }
 
 a {
-    color: #377ba8;
+    color: black;
 }
 
 hr {
     border: none;
-    border-top: 1px solid lightgray;
+    border-top: 1px solid palevioletred;
 }
 
 nav {
-    background: lightgray;
+    background: palevioletred;
     display: flex;
     align-items: center;
     padding: 0 0.5rem;
@@ -147,7 +147,7 @@ input[type=submit] {
  */
 #map {
     height: 60%;
-    width: 80%;
+    width: 100%;
 }
 
 
@@ -248,6 +248,51 @@ input[type=button].button-secondary:hover {
 }
 
 
-.question {
-    display: none
+
+
+.button-success,
+.button-error,
+.button-warning,
+.button-secondary {
+    color: white;
+    border-radius: 4px;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+}
+
+.button-success {
+    background: rgb(28, 184, 65);
+    /* this is a green */
+}
+
+.button-error {
+    background: rgb(202, 60, 60);
+    /* this is a maroon */
+}
+
+.button-warning {
+    background: rgb(223, 117, 20);
+    /* this is an orange */
+}
+
+.button-secondary {
+    background: rgb(66, 184, 221);
+    /* this is a light blue */
+}
+
+
+
+.button-xsmall {
+    font-size: 70%;
+}
+
+.button-small {
+    font-size: 85%;
+}
+
+.button-large {
+    font-size: 110%;
+}
+
+.button-xlarge {
+    font-size: 125%;
 }

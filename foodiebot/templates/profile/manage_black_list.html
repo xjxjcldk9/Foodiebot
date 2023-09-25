@@ -1,0 +1,57 @@
+<head>
+
+    <script>
+        const url = "{{url_for('profile.save_black')}}"
+    </script>
+
+    <script defer type="module" src="{{url_for('static', filename='black_list_manage.js')}}"></script>
+    <link rel="stylesheet" href="{{url_for('static', filename='food_manage_style.css')}}">
+
+</head>
+
+{% extends 'base.html' %}
+
+
+{% block header %}
+
+<h1>{% block title %}{% endblock %}</h1>
+
+{% endblock %}
+
+
+
+
+
+{% block content %}
+
+
+
+
+<div class="container">
+
+    <div class="panel">
+        <div class="dropzone_name">
+            <h2>編輯區 <button id="add_food">+</button></h2>
+            </h2>
+        </div>
+        <div class="dropzone" id="pool">
+
+            {% for black in black_list%}
+
+            <div class="draggable_block">{{black['name']}}</div>
+
+            {%endfor%}
+
+        </div>
+
+
+    </div>
+</div>
+
+<div class="trash">垃圾桶</div>
+<button id="save">儲存變更</button>
+<a class="button-warning pure-button" href="{{ url_for('profile.save_food') }}">管理食物</a>
+
+
+
+{% endblock %}
