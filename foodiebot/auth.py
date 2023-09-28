@@ -8,7 +8,6 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from foodiebot.db import get_db
 
-import jwt
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -18,93 +17,100 @@ bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 @bp.route('/login', methods=('GET', 'POST'))
 def login():
+    if request.method == 'POST':
 
-    db = get_db()
+        error = None
 
-    users = jwt.decode(request.form['credential'], options={
-        "verify_signature": False})
+        db = get_db()
+        user = db.execute(
+            'SELECT * FROM user WHERE email=?',
+            (request.form['stacked-email'],)
+        ).fetchone()
 
-    session['email'] = users['email']
-    session['name'] = users['name']
+        if user is None:
+            error = '無此使用者'
+        elif request.form['stacked-password'] != user['password']:
+            error = '密碼錯誤'
 
-    user = db.execute(
-        'SELECT * FROM user WHERE email = ?', (users["email"],)
-    ).fetchone()
+        else:
 
-    if user == None:
-        return redirect(url_for('auth.user_info'))
+            session.clear()
+            session['user_id'] = user['id']
+            session['user_name'] = user['username']
 
-    session.clear()
-    session['user_id'] = user['id']
-    session['user_name'] = user['username']
-
-    # 一些儲存的東西
-    session['result'] = []
-
-    return redirect(url_for('restaurant.user_input'))
+            # 一些儲存的東西
+            session['result'] = []
+            return redirect(url_for('restaurant.user_input'))
+        flash(error)
+    return render_template('auth/login.html')
 
 
-@bp.route('/user_info', methods=('GET', 'POST'))
-def user_info():
+@bp.route('/register', methods=('GET', 'POST'))
+def register():
     if request.method == 'POST':
         db = get_db()
 
-        db.execute(
-            'INSERT INTO user (username, email, gender, birthday) VALUES (?,?,?,?)',
-            (session['name'], session['email'],
-             request.form['stacked-gender'], request.form['stacked-date'])
-        )
+        gender = request.form.get('stacked-gender')
+        birthday = request.form.get('stacked-date')
+        error = None
 
-        db.commit()
+        if request.form['stacked-password'] != request.form['stacked-passwordB']:
+            error = '密碼不一致'
+        if error is None:
 
-        # 初次登陸，將default_food複製到custom_food_onboard
+            try:
+                db.execute(
+                    'INSERT INTO user (username, email, password, gender, birthday) VALUES (?,?,?,?,?)',
+                    (request.form['stacked-name'], request.form['stacked-email'], request.form['stacked-password'],
+                     gender, birthday)
+                )
 
-        user = db.execute(
-            'SELECT * FROM user WHERE email = ?', (session["email"],)
-        ).fetchone()
+                db.commit()
+            except db.IntegrityError:
+                error = "該 Email 已註冊過"
 
-        default_food = db.execute(
-            'SELECT * FROM default_food'
-        ).fetchall()
+            else:
+                user = db.execute(
+                    'SELECT * FROM user WHERE email = ?', (
+                        request.form['stacked-email'],)
+                ).fetchone()
 
-        A = default_food[:len(default_food)-10]
-        B = default_food[-10:]
+                default_food = db.execute(
+                    'SELECT * FROM default_food'
+                ).fetchall()
 
-        for food in A:
-            db.execute(
-                "INSERT INTO custom_food_onboard (category, singlepeople, manypeople, cheap, expensive, breakfast, lunch, dinner, night, ordinary, hot, cold, user_id) VALUES (?, ?,?,?,?,?,?,?,?,?,?,?,?)",
-                (food["category"], food["singlepeople"], food["manypeople"], food["cheap"], food['expensive'], food["breakfast"], food["lunch"], food["dinner"],
-                    food["night"], food["ordinary"], food["hot"], food["cold"], user['id']),
-            )
-            db.commit()
-        for food in B:
-            db.execute(
-                "INSERT INTO custom_food_reserve (category, singlepeople, manypeople, cheap, expensive, breakfast, lunch, dinner, night, ordinary, hot, cold, user_id) VALUES (?, ?,?,?,?,?,?,?,?,?,?,?,?)",
-                (food["category"], food["singlepeople"], food["manypeople"], food["cheap"], food['expensive'], food["breakfast"], food["lunch"], food["dinner"],
-                    food["night"], food["ordinary"], food["hot"], food["cold"], user['id']),
-            )
-            db.commit()
+                A = default_food[:len(default_food)-10]
+                B = default_food[-10:]
 
-        default_black_list = db.execute(
-            'SELECT * FROM default_black_list'
-        ).fetchall()
+                for food in A:
+                    db.execute(
+                        "INSERT INTO custom_food_onboard (category, singlepeople, manypeople, cheap, expensive, breakfast, lunch, dinner, night, ordinary, hot, cold, user_id) VALUES (?, ?,?,?,?,?,?,?,?,?,?,?,?)",
+                        (food["category"], food["singlepeople"], food["manypeople"], food["cheap"], food['expensive'], food["breakfast"], food["lunch"], food["dinner"],
+                            food["night"], food["ordinary"], food["hot"], food["cold"], user['id']),
+                    )
+                    db.commit()
+                for food in B:
+                    db.execute(
+                        "INSERT INTO custom_food_reserve (category, singlepeople, manypeople, cheap, expensive, breakfast, lunch, dinner, night, ordinary, hot, cold, user_id) VALUES (?, ?,?,?,?,?,?,?,?,?,?,?,?)",
+                        (food["category"], food["singlepeople"], food["manypeople"], food["cheap"], food['expensive'], food["breakfast"], food["lunch"], food["dinner"],
+                            food["night"], food["ordinary"], food["hot"], food["cold"], user['id']),
+                    )
+                    db.commit()
 
-        for black in default_black_list:
-            db.execute(
-                'INSERT INTO custom_black_list (name, user_id) VALUES (?,?)',
-                (black['name'], user['id'])
-            )
-            db.commit()
+                default_black_list = db.execute(
+                    'SELECT * FROM default_black_list'
+                ).fetchall()
 
-        session.clear()
-        session['user_id'] = user['id']
-        session['user_name'] = user['username']
+                for black in default_black_list:
+                    db.execute(
+                        'INSERT INTO custom_black_list (name, user_id) VALUES (?,?)',
+                        (black['name'], user['id'])
+                    )
+                    db.commit()
 
-        # 一些儲存的東西
-        session['result'] = []
-        return redirect(url_for('restaurant.user_input'))
-
-    return render_template('user_info.html')
+                return redirect(url_for('auth.login'))
+        flash(error)
+    return render_template('auth/register.html')
 
 
 @bp.before_app_request

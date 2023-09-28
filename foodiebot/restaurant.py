@@ -114,7 +114,7 @@ def show_result():
 
 
 # api_key = os.getenv('GOOGLEMAP_API_KEY')
-api_key = 'AIzaSyAd5FeE-Wb0Bc9r2uHPZngmVuOIi1cYJT8'
+api_key = 'AIzaSyC5FeD_HmfWXFtg-q1_3U5UXgLGzWXFxQE'
 gmaps = googlemaps.Client(key=api_key)
 
 

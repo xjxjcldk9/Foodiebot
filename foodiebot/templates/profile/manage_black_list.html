@@ -14,7 +14,7 @@
 
 {% block header %}
 
-<h1>{% block title %}{% endblock %}</h1>
+<h1>{% block title %}黑名單管理{% endblock %}</h1>
 
 {% endblock %}
 
@@ -31,7 +31,7 @@
 
     <div class="panel">
         <div class="dropzone_name">
-            <h2>編輯區 <button id="add_food">+</button></h2>
+            <h2>編輯區 <button class="button-xsmall pure-button" id="add_food">新增黑名單</button></h2>
             </h2>
         </div>
         <div class="dropzone" id="pool">
@@ -48,7 +48,7 @@
     </div>
 </div>
 
-<div class="trash">垃圾桶</div>
+<div class="trash"><i class="fa-solid fa-trash-can"></i></div>
 <button id="save">儲存變更</button>
 <a class="button-warning pure-button" href="{{ url_for('profile.save_food') }}">管理食物</a>
 

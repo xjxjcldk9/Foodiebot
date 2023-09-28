@@ -9,7 +9,7 @@
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
 
     <script src="https://kit.fontawesome.com/86a5869bb1.js" crossorigin="anonymous"></script>
-    <script src="https://accounts.google.com/gsi/client" async></script>
+
 </head>
 
 
@@ -34,16 +34,9 @@
 
 
             {% else %}
+        <li><a href="{{ url_for('auth.register') }}">註冊</a>
+        <li><a href="{{ url_for('auth.login') }}">登入</a>
 
-            <div id="g_id_onload"
-                data-client_id="503554671254-gma67bh8jthekvbe2ub2fqvn4tdudvaf.apps.googleusercontent.com"
-                data-context="signin" data-ux_mode="popup" data-login_uri="{{ url_for('auth.login') }}"
-                data-auto_prompt="false">
-            </div>
-
-            <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline"
-                data-text="signin_with" data-size="medium" data-logo_alignment="left">
-            </div>
 
             {% endif %}
     </ul>

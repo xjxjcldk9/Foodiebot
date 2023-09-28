@@ -11,20 +11,21 @@ DROP TABLE IF EXISTS response;
 
 CREATE TABLE user (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  username TEXT UNIQUE NOT NULL,
+  username TEXT,
   email TEXT UNIQUE NOT NULL,
+  password TEXT,
   gender TEXT,
   birthday TEXT
 );
 
 
+INSERT INTO user(email,gender, birthday) VALUES ('guest', 'guest','guest');
 
 
-INSERT INTO user(username, email,gender, birthday) VALUES ('guest', 'guest','guest','guest');
 
 CREATE TABLE default_food(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    category TEXT UNIQUE NOT NULL,
+    category TEXT  NOT NULL,
     singlepeople INTEGER ,
     manypeople INTEGER ,
     cheap INTEGER ,
@@ -88,7 +89,7 @@ VALUES
 
 CREATE TABLE custom_food_reserve(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    category TEXT UNIQUE NOT NULL,
+    category TEXT  NOT NULL,
     singlepeople INTEGER ,
     manypeople INTEGER ,
     cheap INTEGER ,
@@ -109,7 +110,7 @@ CREATE TABLE custom_food_reserve(
 
 CREATE TABLE custom_food_onboard(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    category TEXT UNIQUE NOT NULL,
+    category TEXT  NOT NULL,
     singlepeople INTEGER ,
     manypeople INTEGER ,
     cheap INTEGER ,
@@ -130,7 +131,7 @@ CREATE TABLE custom_food_onboard(
 
 CREATE TABLE default_black_list(
 id INTEGER PRIMARY KEY AUTOINCREMENT,
-name TEXT UNIQUE NOT NULL
+name TEXT  NOT NULL
 );
 
 INSERT INTO default_black_list (name)
@@ -147,7 +148,7 @@ VALUES
 CREATE TABLE custom_black_list(
 id INTEGER PRIMARY KEY AUTOINCREMENT,
 user_id INTEGER NOT NULL,
-name TEXT UNIQUE NOT NULL,
+name TEXT  NOT NULL,
 FOREIGN KEY (user_id) REFERENCES user (id)
 );
 

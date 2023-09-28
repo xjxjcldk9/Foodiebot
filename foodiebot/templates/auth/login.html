@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+
+{% block header %}
+
+<h1>{% block title %}登入{% endblock %}</h1>
+
+{% endblock %}
+
+
+{% block content %}
+
+
+<form class="pure-form pure-form-stacked" method="post">
+
+
+
+    <fieldset>
+
+        <label for="stacked-email">註冊信箱</label>
+        <input type="email" name="stacked-email" id="stacked-email" placeholder="Email" />
+
+        <label for="stacked-password">密碼</label>
+        <input type="password" name="stacked-password" id="stacked-password" placeholder="密碼" />
+
+        <button type="submit" class="pure-button pure-button-primary">確認</button>
+    </fieldset>
+</form>
+
+
+
+{% endblock %}

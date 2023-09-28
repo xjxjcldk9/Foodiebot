@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+
+{% block header %}
+
+<h1>{% block title %}註冊{% endblock %}</h1>
+
+{% endblock %}
+
+
+{% block content %}
+
+
+<form class="pure-form pure-form-stacked" method="post">
+
+
+
+    <fieldset>
+        <label for="stacked-name">用戶名稱*</label>
+        <input type="text" name="stacked-name" id="stacked-name" placeholder="名稱(可以打中文)" required />
+
+        <label for="stacked-email">信箱*</label>
+        <input type="email" name="stacked-email" id="stacked-email" placeholder="Email" required />
+
+        <label for="stacked-password">密碼*</label>
+        <input type="password" name="stacked-password" id="stacked-password" placeholder="密碼" required />
+
+        <label for="stacked-passwordB">確認密碼*</label>
+        <input type="password" name="stacked-passwordB" id="stacked-passwordB" placeholder="密碼" required />
+
+
+
+        <label for="stacked-gender">性別</label>
+        <select name="stacked-gender" id="stacked-gender">
+            <option>不想說</option>
+            <option>男</option>
+            <option>女</option>
+        </select>
+        <label for="stacked-birthday">生日</label>
+        <input type="date" name="stacked-date" id="stacked-date" />
+
+        <button type="submit" class="pure-button pure-button-primary">確認</button>
+    </fieldset>
+
+</form>
+性別與生日為增進推品質使用
+
+
+
+{% endblock %}
