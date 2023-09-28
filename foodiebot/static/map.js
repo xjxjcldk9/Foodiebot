@@ -16,6 +16,7 @@ function initMap() {
     map = new google.maps.Map(document.getElementById("map"), {
         center: { lat: 25.04625, lng: 121.51753 },
         zoom: 15,
+        disableDefaultUI: true,
     });
     infoWindow = new google.maps.InfoWindow();
 
@@ -23,7 +24,7 @@ function initMap() {
 
     locationButton.textContent = "目前位置";
     locationButton.classList.add("custom-map-control-button");
-    map.controls[google.maps.ControlPosition.RIGHT_TOP].push(locationButton);
+    map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(locationButton);
     locationButton.addEventListener("click", () => {
         // Try HTML5 geolocation.
         if (navigator.geolocation) {
@@ -78,7 +79,7 @@ function initMap() {
 
     map.controls[google.maps.ControlPosition.TOP_LEFT].push(inputText);
     map.controls[google.maps.ControlPosition.TOP_LEFT].push(submitButton);
-    map.controls[google.maps.ControlPosition.TOP_LEFT].push(clearButton);
+    map.controls[google.maps.ControlPosition.BOTTOM_LEFT].push(clearButton);
 
 
 
