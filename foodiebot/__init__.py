@@ -11,8 +11,6 @@ def create_app(test_config=None):
         SECRET_KEY='dev',
         DATABASE=os.path.join(app.instance_path, 'foodiebot.sqlite'),
     )
-    # set optional bootswatch theme
-    app.config['FLASK_ADMIN_SWATCH'] = 'Superhero'
 
     if test_config is None:
         # load the instance config, if it exists, when not testing
@@ -26,11 +24,6 @@ def create_app(test_config=None):
         os.makedirs(app.instance_path)
     except OSError:
         pass
-
-    # a simple page that says hello
-    @app.route('/hello')
-    def hello():
-        return 'Hello, World!'
 
     from . import db
 

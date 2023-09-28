@@ -3,11 +3,9 @@ import random
 from retry import retry
 from datetime import datetime
 import os
-import pandas as pd
 import numpy as np
 import googlemaps
-import functools
-import json
+
 import re
 
 from flask import (
@@ -23,55 +21,52 @@ from foodiebot.db import get_db
 bp = Blueprint('restaurant', __name__, url_prefix='/restaurant')
 
 
-def check_input_valid(inputs):
-    return True
-
-
 @bp.route('/choose_restaurant', methods=('GET', 'POST'))
 def user_input():
-    session['filled'] = False
+    session['IP'] = request.remote_addr
     error = None
+    if session.get('result'):
+        if session['result'] == None:
+            error = '發生錯誤！請重新選擇地點、或是調整參數'
+
+    if error is not None:
+        flash(error)
     if request.method == 'POST':
 
-        if error is not None:
-            flash(error)
+        location_json = request.form['location']
+        location = [float(s)
+                    for s in re.findall(r'-?\d+.?\d*', location_json)]
 
+        radius = request.form['radius']
+
+        money_cheap = request.form['money_cheap']
+        money_expensive = request.form['money_expensive']
+        people_single = request.form['people_single']
+        people_multiple = request.form['people_multiple']
+        store_open = request.form['store_open']
+        store_either = request.form['store_either']
+        rating = float(request.form['rating'])
+
+        search = request.form['search']
+
+        params = {'lat': location,
+                  'radius': float(radius) / 1000,
+                  'money': (money_cheap, money_expensive),
+                  'manypeople': (people_single, people_multiple),
+                  'open': (store_open, store_either),
+                  'rating': rating}
+
+        if session.get('user_id'):
+            params['user_id'] = session['user_id']
         else:
+            params['user_id'] = 1
 
-            location_json = request.form['location']
-            location = [float(s)
-                        for s in re.findall(r'-?\d+.?\d*', location_json)]
+        if search != '':
+            params['manual'] = search
 
-            radius = request.form['radius']
+        session['result'] = choose_restaurant(params)
 
-            money_cheap = request.form['money_cheap']
-            money_expensive = request.form['money_expensive']
-            people_single = request.form['people_single']
-            people_multiple = request.form['people_multiple']
-            store_open = request.form['store_open']
-            store_either = request.form['store_either']
-            rating = float(request.form['rating'])
-
-            search = request.form['search']
-
-            params = {'lat': location,
-                      'radius': float(radius) / 1000,
-                      'money': (money_cheap, money_expensive),
-                      'manypeople': (people_single, people_multiple),
-                      'open': (store_open, store_either),
-                      'rating': rating}
-
-            if not session.get('user_id'):
-                params['user_id'] = 1
-            else:
-                params['user_id'] = session['user_id']
-
-            if search != '':
-                params['manual'] = search
-
-            session['result'] = choose_restaurant(params)
-
-            return redirect(url_for("restaurant.show_result"))
+        return redirect(url_for("restaurant.show_result"))
 
     return render_template('restaurant/user_input.html')
 
@@ -80,22 +75,36 @@ def user_input():
 def show_result():
     db = get_db()
 
-    filling = db.execute(
-        'SELECT * FROM response'
-        ' WHERE user_id = ?'
-        ' AND restaurant = ?',
-        (session['user_id'], session['result']['name'])
-    ).fetchone()
-    if filling:
-        filled = True
-    else:
-        filled = False
+    if session['result'] != None:
 
+        if session.get('user_id'):
+            filling = db.execute(
+                'SELECT * FROM response'
+                ' WHERE user_id = ?'
+                ' AND IP = ?'
+                ' AND restaurant = ?',
+                (session['user_id'], session['IP'], session['result']['name'])
+            ).fetchone()
+            who = session['user_id']
+        else:
+            filling = db.execute(
+                'SELECT * FROM response'
+                ' WHERE restaurant = ?'
+                ' AND IP = ?',
+                (session['result']['name'], session['IP'])
+            ).fetchone()
+            who = 1
+        if filling:
+            filled = True
+        else:
+            filled = False
+    else:
+        return redirect(url_for('restaurant.user_input'))
     if request.method == 'POST':
 
         db.execute(
-            'INSERT INTO response (ts, user_id, category, restaurant, response) VALUES (CURRENT_TIMESTAMP,?, ?,?,?)',
-            (session['user_id'], session['result']['category'],
+            'INSERT INTO response (IP, ts, user_id, category, restaurant, response) VALUES (?,CURRENT_TIMESTAMP,?, ?,?,?)',
+            (session['IP'], who, session['result']['category'],
              session['result']['name'], request.form['response'])
         )
         db.commit()
@@ -104,17 +113,7 @@ def show_result():
     return render_template('restaurant/show_result.html', filled=filled)
 
 
-@bp.route('/clearing')
-@login_required
-def clear_session():
-
-    session['result'] = []
-    # can do some pow
-
-    return redirect(url_for('restaurant.user_input'))
-
-
-api_key = os.environ['GOOGLEMAP_API_KEY']
+api_key = os.getenv('GOOGLEMAP_API_KEY')
 gmaps = googlemaps.Client(key=api_key)
 
 
@@ -139,12 +138,18 @@ class user:
 
         self.user_id = user_id
 
-        BL = get_db().execute(
-            'SELECT name'
-            ' FROM custom_black_list'
-            ' WHERE user_id = ?',
-            (user_id,)
-        ).fetchall()
+        if user_id == 1:
+            BL = get_db().execute(
+                'SELECT name'
+                ' FROM default_black_list'
+            ).fetchall()
+        else:
+            BL = get_db().execute(
+                'SELECT name'
+                ' FROM custom_black_list'
+                ' WHERE user_id = ?',
+                (user_id,)
+            ).fetchall()
 
         self.black_list = [bl['name'] for bl in BL]
 
@@ -182,13 +187,13 @@ class user:
 
         # 處理時間
         if self.now_hour in range(10, 16):
-            meal = 'lunch'
+            meal = ' lunch'
         elif self.now_hour in range(16, 22):
-            meal = 'dinner'
+            meal = ' dinner'
         elif self.now_hour in range(5, 10):
-            meal = 'morning'
+            meal = ' morning'
         else:
-            meal = 'night'
+            meal = ' night'
 
         # 溫度食物
         if self.now_month in range(7, 11):
@@ -200,19 +205,23 @@ class user:
         else:
             temperature = 'ordinary'
 
+        if self.user_id == 1:
+            fromwhere = ' FROM default_food WHERE'
+        else:
+            fromwhere = ' FROM custom_food_onboard WHERE user_id = ' + \
+                str(self.user_id) + ' AND '
+
         categories = get_db().execute(
-            'SELECT f.category'
-            ' FROM custom_food_onboard f'
-            ' WHERE user_id = ?'
-            ' AND ' + meal + '= 1'
+            'SELECT category'
+            + fromwhere
+            + meal + '= 1'
             ' AND ' + temperature + '= 1'
             ' AND ordinary = 1'
             ' AND cheap = ?'
             ' AND expensive = ?'
             ' AND singlepeople = ?'
             ' AND manypeople = ?;',
-            (self.user_id,
-             helper(self.money[0]), helper(self.money[1]),
+            (helper(self.money[0]), helper(self.money[1]),
              helper(self.manypeople[0]), helper(self.manypeople[1]))
         ).fetchall()
 
@@ -228,9 +237,9 @@ class user:
         '''
 
         if self.money == ('true', 'false'):
-            min_price, max_price = (0, 2)
+            min_price, max_price = (0, 1)
         elif self.money == ('false', 'true'):
-            min_price, max_price = (2, 4)
+            min_price, max_price = (1, 4)
         else:
             min_price, max_price = (0, 4)
 
@@ -302,7 +311,7 @@ def choose_restaurant(params):
     # }
 
     if use.restaurant_information is None:
-        return "請將距離調大，或調整起始位置"
+        return None
 
     return {
         'check': use.categories,

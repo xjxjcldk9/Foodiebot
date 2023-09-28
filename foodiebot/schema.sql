@@ -12,9 +12,15 @@ DROP TABLE IF EXISTS response;
 CREATE TABLE user (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   username TEXT UNIQUE NOT NULL,
-  email TEXT UNIQUE NOT NULL
+  email TEXT UNIQUE NOT NULL,
+  gender TEXT,
+  birthday TEXT
 );
 
+
+
+
+INSERT INTO user(username, email,gender, birthday) VALUES ('guest', 'guest','guest','guest');
 
 CREATE TABLE default_food(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -149,6 +155,7 @@ FOREIGN KEY (user_id) REFERENCES user (id)
 
 CREATE TABLE response(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    IP TEXT,
     ts TIMESTAMP,
     user_id INTEGER NOT NULL,
     category TEXT,

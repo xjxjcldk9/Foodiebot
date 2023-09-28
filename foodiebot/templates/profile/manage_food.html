@@ -4,7 +4,7 @@
         const url = "{{url_for('profile.save_food')}}"
     </script>
 
-    <script defer type="module" src="{{url_for('static', filename='food_manage.js')}}"></script>
+    <script defer src="{{url_for('static', filename='food_manage.js')}}"></script>
     <link rel="stylesheet" href="{{url_for('static', filename='food_manage_style.css')}}">
 
 </head>
@@ -14,11 +14,9 @@
 
 {% block header %}
 
-<h1>{% block title %}{% endblock %}</h1>
+<h1>{% block title %}食物管理{% endblock %}</h1>
 
 {% endblock %}
-
-
 
 
 
@@ -118,7 +116,7 @@
                     </div>
                 </fieldset>
                 <fieldset>
-                    <legend>溫度</legend>
+                    <legend>季節</legend>
                     <div>
                         <input type="checkbox" name="ok" class="information" {%if food['ordinary']==1%} checked
                             {%endif%} />
@@ -126,13 +124,13 @@
                     </div>
                     <div>
                         <input type="checkbox" name="hot" class="information" {%if food['hot']==1%} checked {%endif%} />
-                        <label for="hot">夏天吃</label>
+                        <label for="hot">只能夏天吃</label>
                     </div>
 
                     <div>
                         <input type="checkbox" name="cold" class="information" {%if food['cold']==1%} checked
                             {%endif%} />
-                        <label for="cold">冬天吃</label>
+                        <label for="cold">只能冬天吃</label>
                     </div>
                 </fieldset>
             </div>
@@ -147,7 +145,13 @@
 <br>
 <button id="save">儲存變更</button>
 <a class="button-warning pure-button" href="{{ url_for('profile.black_list') }}">管理黑名單</a>
+<p>只有卡片池內的類別才會被搜尋</p>
+<p>卡片庫可以新增卡片</p>
+<p>透過拖拉的方式移動卡片位置、或刪除卡片</p>
+<p>點擊卡片可以編輯卡片屬性</p>
 
+
+<p>記得按下<span>儲存</span>才會更新</p>
 
 <div id="template">
     <fieldset>
@@ -202,19 +206,19 @@
         </div>
     </fieldset>
     <fieldset>
-        <legend>溫度</legend>
+        <legend>季節</legend>
         <div>
             <input type="checkbox" name="ok" checked class="information" />
             <label for="ok">都可以</label>
         </div>
         <div>
             <input type="checkbox" name="hot" checked class="information" />
-            <label for="hot">夏天吃</label>
+            <label for="hot">只能夏天吃</label>
         </div>
 
         <div>
             <input type="checkbox" name="cold" class="information" />
-            <label for="cold">冬天吃</label>
+            <label for="cold">只能冬天吃</label>
         </div>
     </fieldset>
 </div>

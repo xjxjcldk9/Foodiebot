@@ -3,7 +3,7 @@
 
 {% block header %}
 
-<h1>{% block title %}就是吃這個{% endblock %}</h1>
+<h1>{% block title %}就吃這家！{% endblock %}</h1>
 
 {% endblock %}
 
@@ -41,10 +41,11 @@
 
 
 <a class="button-success pure-button " href="{{ url_for('restaurant.user_input') }}">重新決定！</a>
-<a class="button-warning pure-button" href="{{ url_for('restaurant.user_input') }}">問題回報！</a>
+<a class="button-warning pure-button" target="_blank" href="https://forms.gle/9xn5tsGx6gp3fk4x7">問題回報！</a>
 
 
 {%endif%}
+
 
 
 

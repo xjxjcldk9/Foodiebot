@@ -13,18 +13,15 @@
         const url = {{ url_for('restaurant.user_input') | tojson}};
     </script>
 
-
-
     <script defer src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
-    <script defer type="module" src="{{url_for('static', filename='map.js')}}"></script>
+    <script defer src="{{url_for('static', filename='map.js')}}"></script>
 
-    <script
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAd5FeE-Wb0Bc9r2uHPZngmVuOIi1cYJT8&callback=initMap&v=weekly&language=ZH-TW"
-        defer>
+    <script defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAd5FeE-Wb0Bc9r2uHPZngmVuOIi1cYJT8&callback=initMap&v=weekly&language=ZH-TW">
         </script>
 
 
-    <script defer type="module" src="{{url_for('static', filename='parameters.js')}}"></script>
+    <script defer src="{{url_for('static', filename='parameters.js')}}"></script>
 
 </head>
 
@@ -46,12 +43,17 @@
 
 
 {% block content %}
+<p>請在地圖上釘選想搜尋的地點</p>
 {% if not session['user_id'] %}
-<p>登入後有更多功能！</p>
+<p>登入後有更多功能</p>
 {%else %}
-<p></p>
+<p>可以在地圖上調控搜尋範圍</p>
+<p>其他參數可以調整價格、人數、星等</p>
+<p>當按下<span>抽抽</span>，會自動至卡片池隨機抽選一個類別做搜尋</p>
+<p>也可以使用進階搜尋直接找尋想要的類別</p>
 {% endif %}
 
+<p></p>
 
 
 
@@ -99,9 +101,9 @@
 
     <div class="division">
         <i class="fa-solid fa-store"></i>
-        <input type="checkbox" id="store_open">
+        <input type="checkbox" id="store_open" checked>
         <label for="checkbox">一定現在開門</label>
-        <input type="checkbox" id="store_either" checked>
+        <input type="checkbox" id="store_either">
         <label for="checkbox">現在關門也行</label>
     </div>
     <div class="division">
