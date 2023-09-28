@@ -113,7 +113,8 @@ def show_result():
     return render_template('restaurant/show_result.html', filled=filled)
 
 
-api_key = os.getenv('GOOGLEMAP_API_KEY')
+# api_key = os.getenv('GOOGLEMAP_API_KEY')
+api_key = 'AIzaSyAd5FeE-Wb0Bc9r2uHPZngmVuOIi1cYJT8'
 gmaps = googlemaps.Client(key=api_key)
 
 
