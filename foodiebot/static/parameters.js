@@ -107,6 +107,9 @@ rating_bar.addEventListener("input", (event) => {
 const postButton = document.getElementById('postButton');
 postButton.addEventListener('click', () => {
 
+    const loader = document.createElement('div')
+    loader.className = 'Loader'
+    postButton.parentElement.appendChild(loader);
 
     if (myLocation == null) {
         alert("請標註地點");
@@ -123,8 +126,6 @@ postButton.addEventListener('click', () => {
         data.append("store_either", store_either.checked);
         data.append("rating", rating.value);
         data.append("search", manual.value);
-
-
 
         fetch(url, {
             "method": "POST",

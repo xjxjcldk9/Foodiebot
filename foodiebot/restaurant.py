@@ -26,11 +26,9 @@ def user_input():
     session['IP'] = request.remote_addr
     error = None
     if session.get('result'):
-        if session['result'] == None:
-            error = '發生錯誤！請重新選擇地點、或是調整參數'
+        if session['result'] == 'ERROR':
+            error = '你選擇的地點找不到合適的餐廳！請重新選擇地點、或是調整參數'
 
-    if error is not None:
-        flash(error)
     if request.method == 'POST':
 
         location_json = request.form['location']
@@ -68,6 +66,8 @@ def user_input():
 
         return redirect(url_for("restaurant.show_result"))
 
+    if error is not None:
+        flash(error)
     return render_template('restaurant/user_input.html')
 
 
@@ -75,7 +75,7 @@ def user_input():
 def show_result():
     db = get_db()
 
-    if session['result'] != None:
+    if session['result'] != 'ERROR':
 
         if session.get('user_id'):
             filling = db.execute(
@@ -99,6 +99,7 @@ def show_result():
         else:
             filled = False
     else:
+
         return redirect(url_for('restaurant.user_input'))
     if request.method == 'POST':
 
@@ -312,7 +313,7 @@ def choose_restaurant(params):
     # }
 
     if use.restaurant_information is None:
-        return None
+        return 'ERROR'
 
     return {
         'check': use.categories,
