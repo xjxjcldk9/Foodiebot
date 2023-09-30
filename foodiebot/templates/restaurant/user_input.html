@@ -1,5 +1,4 @@
 <head>
-
     <script>
         let login = false;
         {% if session['user_id'] %}
@@ -9,15 +8,14 @@
         let myLocation;
         let radius = 500;
 
-        const url = {{ url_for('restaurant.user_input') | tojson}};
+        const user_input_url = "{{ url_for('restaurant.user_input') }}";
     </script>
 
     <script defer src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
     <script defer src="{{url_for('static', filename='map.js')}}"></script>
 
     <script defer
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAd5FeE-Wb0Bc9r2uHPZngmVuOIi1cYJT8&callback=initMap&v=weekly&language=ZH-TW">
-        </script>
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAd5FeE-Wb0Bc9r2uHPZngmVuOIi1cYJT8&callback=initMap&v=weekly&language=ZH-TW"></script>
 
 
     <script defer src="{{url_for('static', filename='parameters.js')}}"></script>
@@ -59,11 +57,11 @@
 <div id="map"></div>
 
 
+<p></p>
 
 
-
-<button class="pure-button" id="otherparamsButton">其他參數</button>
-<button class="pure-button" id="advancedButton">進階搜尋</button>
+<button class="pure-button" id="otherParamsBtn">其他參數</button>
+<button class="pure-button" id="directSearchBtn">直接搜尋</button>
 
 
 <button class="pure-button pure-button-primary" id="postButton">抽抽！
@@ -71,46 +69,40 @@
 
 
 
-<form class="pure-form" id="advancedsearch">
+<form class="pure-form" id="directSearch">
     <fieldset>
         <input type="keyword" id="manual" placeholder="想搜尋的類別" />
     </fieldset>
 </form>
 
+<p></p>
 
-
-
-
-<div id="otherparams">
+<div id="otherParams">
     <div class="division">
         <i class="fa-solid fa-coins "></i>
-        <input type="checkbox" id="money_cheap" checked>
-        <label for="money_cheap">便宜的</label>
-        <input type="checkbox" id="money_expensive">
-        <label for="money_expensive">貴的</label>
+        <input type="checkbox" id="cheap" checked>
+        <label for="cheap">便宜的</label>
+        <input type="checkbox" id="expensive">
+        <label for="expensive">貴的</label>
     </div>
     <div class="division">
         <i class="fa-solid fa-people-group"></i>
-        <input type="checkbox" id="people_single" checked>
-        <label for="checkbox">自己吃</label>
-        <input type="checkbox" id="people_multiple">
-        <label for="checkbox">多人吃</label>
+        <input type="checkbox" id="singlepeople" checked>
+        <label for="singlepeople">自己吃</label>
+        <input type="checkbox" id="manypeople">
+        <label for="manypeople">多人吃</label>
     </div>
 
     <div class="division">
         <i class="fa-solid fa-store"></i>
-        <input type="checkbox" id="store_open" checked>
-        <label for="checkbox">一定現在開門</label>
-        <input type="checkbox" id="store_either">
-        <label for="checkbox">現在關門也行</label>
+        <input type="checkbox" id="open">
+        <label for="open">現在開門</label>
     </div>
     <div class="division">
         <i class="fa-solid fa-star"></i>
-        <input id="rating_bar" type="range" min="3" max="4.5" value="3.5" step="0.1" /> <output id="rating"></output>星以上
+        <input id="star" type="range" min="3" max="4.5" value="3.5" step="0.1" /> <output id="starOutput"></output>星以上
     </div>
 </div>
-
-
 
 
 {% endblock %}

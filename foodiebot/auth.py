@@ -76,7 +76,8 @@ def register():
                 ).fetchone()
 
                 default_food = db.execute(
-                    'SELECT * FROM default_food'
+                    'SELECT * FROM custom_food'
+                    ' WHERE user_id = 1'
                 ).fetchall()
 
                 # 給新註冊的用戶新增初始食物
@@ -89,7 +90,8 @@ def register():
                     db.commit()
 
                 default_black_list = db.execute(
-                    'SELECT * FROM default_black_list'
+                    'SELECT * FROM custom_black_list'
+                    ' WHERE user_id = 1'
                 ).fetchall()
 
                 # 給新註冊的用戶新增黑名單

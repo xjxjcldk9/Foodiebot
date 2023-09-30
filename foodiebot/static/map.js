@@ -47,13 +47,13 @@ function initMap() {
     });
 
 
+
+
     const clearButton = document.createElement("input");
 
     clearButton.type = "button";
     clearButton.value = "清除地點";
     clearButton.classList.add("button", "button-secondary");
-
-
 
 
 
@@ -98,10 +98,7 @@ function initMap() {
     });
 
 
-    submitButton.addEventListener("click", () => {
-        geocode({ address: inputText.value });
-    }
-    );
+
     clearButton.addEventListener("click", () => {
         clear();
         cityCircle.setCenter(null);

@@ -1,101 +1,86 @@
-const advancedsearch_button = document.getElementById("advancedButton");
-const advancedsearch = document.getElementById("advancedsearch");
+const directSearchBtn = document.getElementById("directSearchBtn");
+const directSearch = document.getElementById("directSearch");
 
-const otherparams_button = document.getElementById("otherparamsButton");
-const otherparams = document.getElementById("otherparams");
+const otherParamsBtn = document.getElementById("otherParamsBtn");
+const otherParams = document.getElementById("otherParams");
 
+//先隱藏參數
+directSearch.style.display = "none";
+otherParams.style.display = "none";
 
-advancedsearch.style.display = "none";
-
-otherparams.style.display = "none";
-
-
+//若無登入則不顯示按鈕
 if (!login) {
-    otherparams_button.style.display = "none";
-    advancedsearch_button.style.display = "none";
+    otherParamsBtn.style.display = "none";
+    directSearchBtn.style.display = "none";
 }
 
 
-
-advancedsearch_button.addEventListener("click", () => {
-    button_show(advancedsearch, advancedsearch_button)
-}
-)
-
-
-otherparams_button.addEventListener("click", () => {
-    button_show(otherparams, otherparams_button)
-}
-)
-
-function button_show(x, button) {
-    if (x.style.display === "none") {
-        x.style.display = "block";
-        button.classList.add("pure-button-active");
+directSearchBtn.addEventListener("click", () => {
+    if (directSearch.style.display === "none") {
+        directSearch.style.display = "block";
+        directSearchBtn.classList.add("pure-button-active");
     } else {
-        x.style.display = "none";
-        button.classList.remove("pure-button-active");
+        directSearch.style.display = "none";
+        directSearchBtn.classList.remove("pure-button-active");
     }
-}
+})
+
+otherParamsBtn.addEventListener("click", () => {
+    if (otherParams.style.display === "none") {
+        otherParams.style.display = "block";
+        otherParamsBtn.classList.add("pure-button-active");
+    } else {
+        otherParams.style.display = "none";
+        otherParamsBtn.classList.remove("pure-button-active");
+    }
+})
 
 
 
-const money_cheap = document.getElementById("money_cheap");
-const money_expensive = document.getElementById("money_expensive");
+const cheap = document.getElementById("cheap");
+const expensive = document.getElementById("expensive");
 
-const people_single = document.getElementById("people_single");
-const people_multiple = document.getElementById("people_multiple");
+const singlepeople = document.getElementById("singlepeople");
+const manypeople = document.getElementById("manypeople");
 
+const open = document.getElementById("open");
 
-const store_open = document.getElementById("store_open");
-const store_either = document.getElementById("store_either");
-
-const rating_bar = document.getElementById("rating_bar");
-const rating = document.getElementById("rating");
+const star = document.getElementById("star");
+const starOutput = document.getElementById("starOutput");
 
 const manual = document.getElementById("manual");
 
-money_cheap.addEventListener("click", () => {
-    if (!money_cheap.checked && !money_expensive.checked) {
-        money_expensive.checked = true;
+//確保不會都沒勾到
+cheap.addEventListener("click", () => {
+    if (!cheap.checked && !expensive.checked) {
+        expensive.checked = true;
+    }
+});
+
+expensive.addEventListener("click", () => {
+    if (!cheap.checked && !expensive.checked) {
+        cheap.checked = true;
+    }
+});
+
+singlepeople.addEventListener("click", () => {
+    if (!singlepeople.checked && !manypeople.checked) {
+        manypeople.checked = true;
     }
 });
 
 
-money_expensive.addEventListener("click", () => {
-    if (!money_cheap.checked && !money_expensive.checked) {
-        money_cheap.checked = true;
-    }
-});
-
-people_single.addEventListener("click", () => {
-    if (!people_single.checked && !people_multiple.checked) {
-        people_multiple.checked = true;
-    }
-});
-
-
-people_multiple.addEventListener("click", () => {
-    if (!people_single.checked && !people_multiple.checked) {
-        people_single.checked = true;
+manypeople.addEventListener("click", () => {
+    if (!singlepeople.checked && !manypeople.checked) {
+        singlepeople.checked = true;
     }
 });
 
 
 
-store_either.addEventListener("click", () => {
-    store_open.checked = !(store_open.checked);
-});
-
-store_open.addEventListener("click", () => {
-    store_either.checked = !(store_either.checked);
-});
-
-
-
-rating.textContent = rating_bar.value;
-rating_bar.addEventListener("input", (event) => {
-    rating.textContent = event.target.value;
+starOutput.textContent = star.value;
+star.addEventListener("input", (event) => {
+    starOutput.textContent = event.target.value;
 });
 
 
@@ -115,19 +100,26 @@ postButton.addEventListener('click', () => {
         alert("請標註地點");
     }
     else {
-        let data = new FormData;
-        data.append("location", JSON.stringify(myLocation));
-        data.append("radius", radius);
-        data.append("money_cheap", money_cheap.checked);
-        data.append("money_expensive", money_expensive.checked);
-        data.append("people_single", people_single.checked);
-        data.append("people_multiple", people_multiple.checked);
-        data.append("store_open", store_open.checked);
-        data.append("store_either", store_either.checked);
-        data.append("rating", rating.value);
-        data.append("search", manual.value);
 
-        fetch(url, {
+
+
+        let data = new FormData;
+        let parameters = {};
+        parameters.location = { 'lat': myLocation.lat(), 'lng': myLocation.lng() };
+        //這邊是公尺
+        parameters.radius = radius / 1000;
+        parameters.cheap = checkedToNum(cheap);
+        parameters.expensive = checkedToNum(expensive);
+        parameters.singlepeople = checkedToNum(singlepeople);
+        parameters.manypeople = checkedToNum(manypeople);
+        parameters.open = checkedToNum(open);
+        parameters.star = Number(star.value);
+        parameters.manual = manual.value;
+
+        data.append('parameters', JSON.stringify(parameters));
+
+
+        fetch(user_input_url, {
             "method": "POST",
             "body": data,
         }).then(
@@ -140,7 +132,12 @@ postButton.addEventListener('click', () => {
             }
         );
     };
-
-
-
 });
+
+
+function checkedToNum(checkbox) {
+    if (checkbox.checked) {
+        return 1;
+    }
+    return 0;
+}
