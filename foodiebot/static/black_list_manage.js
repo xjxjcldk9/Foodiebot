@@ -1,126 +1,128 @@
-let dragged;
+class BlackCard {
+    constructor(name) {
+        this.name = name;
+    }
+}
 
-const pool = document.getElementById('pool');
-
-
-//讓掉落區中的卡片可以拖曳、顯示編輯區
-
-const blocks = document.querySelectorAll(".draggable_block");
-blocks.forEach((block) => make_block_listen(block));
+const container = [];
 
 
-function make_block_listen(block) {
-    block.draggable = true;
+//先把資料庫中的物件變成卡片丟上去
+async function populate() {
+    const request = new Request(get_black_url);
+    const response = await fetch(request);
+    const blacks = await response.json();
 
-    block.addEventListener("drag", (event) => {
-        //console.log("dragging");
-    });
-
-    block.addEventListener("dragstart", (event) => {
-        // store a ref. on the dragged elem
-        dragged = event.target;
-        // make it half transparent
-        event.target.classList.add("dragging");
-    });
-
-    block.addEventListener("dragend", (event) => {
-        // reset the transparency
-        event.target.classList.remove("dragging");
-    });
-
+    addToContainer(blacks);
+    showContainer();
 }
 
 
 
 
-//新增卡片
 
-
-const addButton = document.getElementById("add_food");
-addButton.addEventListener("click", () => {
-
-    const describe_box = document.createElement('div');
-    describe_box.classList.add("draggable_block");
-
-    describe_box.setAttribute('contenteditable', true);
-
-    pool.appendChild(describe_box);
-    make_block_listen(describe_box);
-
-
-
-    describe_box.focus();
-
-
-
-});
-
-
-const trash = document.querySelector(".trash");
-
-
-trash.addEventListener(
-    "dragover",
-    (event) => {
-        // prevent default to allow drop
-        event.preventDefault();
-    },
-    false,
-);
-
-trash.addEventListener("dragenter", (event) => {
-    // highlight potential drop target when the draggable element enters it
-    if (event.target.classList.contains("trash")) {
-        event.target.classList.add("dragover");
+function addToContainer(blacks) {
+    for (const black of blacks) {
+        const blackCard = new BlackCard(black.name);
+        container.push(blackCard);
     }
-});
+}
 
-trash.addEventListener("dragleave", (event) => {
-    // reset background of potential drop target when the draggable element leaves it
-    if (event.target.classList.contains("trash")) {
-        event.target.classList.remove("dragover");
+function showContainer() {
+    const containerH = document.getElementById('container');
+    for (const blackCard of container) {
+        const card = document.createElement('div');
+        card.className = 'card';
+
+        const name = document.createElement('h2');
+        name.textContent = blackCard.name;
+
+        card.appendChild(name);
+
+
+        const delBtn = document.createElement('button');
+        delBtn.textContent = '刪除詞彙';
+        delBtn.addEventListener("click", () => {
+            const result = confirm(`確定刪除「${blackCard.name}」？`);
+            if (result) {
+                container.splice(container.indexOf(blackCard), 1);
+                clearShow();
+                showContainer();
+            }
+        })
+        card.appendChild(delBtn);
+
+
+
+
+        containerH.appendChild(card);
     }
-});
+}
 
-trash.addEventListener("drop", (event) => {
-    // prevent default action (open as link for some elements)
-    event.preventDefault();
-    // move dragged element to the selected drop target
-    if (event.target.classList.contains("trash")) {
-        event.target.classList.remove("dragover");
-        //移除dragged
-        dragged.remove();
+
+function clearShow() {
+    const containerH = document.getElementById('container');
+    containerH.innerHTML = '';
+}
+
+const addBtn = document.getElementById('add');
+addBtn.addEventListener("click", () => {
+    const newName = prompt('黑名單');
+
+    if (newName !== null) {
+        if (newName === '') {
+            alert('不能為空');
+        } else if (checkIfRepeat(newName)) {
+            const blackCard = new BlackCard(newName);
+            container.unshift(blackCard);
+            clearShow();
+            showContainer();
+        }
+        else {
+            alert(`「${newName}」已經存在`);
+        }
+
     }
-});
+})
 
+
+function checkIfRepeat(name) {
+    for (const blackCard of container) {
+        if (name === blackCard.name) {
+            return false;
+        }
+    }
+    return true;
+}
 
 
 const saveBtn = document.getElementById('save');
-
 saveBtn.addEventListener("click", () => {
-    const foods = document.querySelectorAll(".draggable_block");
     let data = new FormData;
-
-    //Turn into binary then send I suppose:)
-    const name = [];
+    data.append("blackCards", JSON.stringify(container));
 
 
-    foods.forEach((food) => {
-        name.push(food.textContent);
-
-    });
-
-    data.append('black', name);
-
-    fetch(url, {
+    fetch(save_black_url, {
         "method": "POST",
         "body": data,
-    }).then(response => {
-        if (response.redirected) {
-            window.location = response.url
-        } else {
-            alert("一些錯誤提示")
+    }).then(
+        response => {
+            if (response.redirected) {
+                window.location = response.url
+            } else {
+                alert("一些錯誤提示")
+            }
         }
-    });
-});
+    )
+})
 
+
+
+
+
+
+
+
+
+
+populate();

@@ -1,8 +1,6 @@
 let map, infoWindow;
 let marker;
 let geocoder;
-let responseDiv;
-let response;
 let cityCircle;
 
 let editable = false;
@@ -21,10 +19,9 @@ function initMap() {
     infoWindow = new google.maps.InfoWindow();
 
     const locationButton = document.createElement("button");
-
     locationButton.textContent = "目前位置";
     locationButton.classList.add("custom-map-control-button");
-    map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(locationButton);
+    map.controls[google.maps.ControlPosition.TOP_LEFT].push(locationButton);
     locationButton.addEventListener("click", () => {
         // Try HTML5 geolocation.
         if (navigator.geolocation) {
@@ -35,8 +32,9 @@ function initMap() {
                         lng: position.coords.longitude,
                     };
 
-                    geocode({ location: pos });
                     map.setCenter(pos);
+                    cityCircle.setCenter(pos);
+
                 },
                 () => {
                     handleLocationError(true, infoWindow, map.getCenter());
@@ -49,25 +47,6 @@ function initMap() {
     });
 
 
-
-
-
-    geocoder = new google.maps.Geocoder();
-
-    const inputText = document.createElement("input");
-
-
-
-    inputText.type = "text";
-    inputText.placeholder = "搜尋地點";
-
-
-    const submitButton = document.createElement("input");
-
-    submitButton.type = "button";
-    submitButton.value = "搜尋";
-    submitButton.classList.add("button", "button-primary");
-
     const clearButton = document.createElement("input");
 
     clearButton.type = "button";
@@ -77,9 +56,8 @@ function initMap() {
 
 
 
-    map.controls[google.maps.ControlPosition.TOP_LEFT].push(inputText);
-    map.controls[google.maps.ControlPosition.TOP_LEFT].push(submitButton);
-    map.controls[google.maps.ControlPosition.BOTTOM_LEFT].push(clearButton);
+
+    map.controls[google.maps.ControlPosition.TOP_LEFT].push(clearButton);
 
 
 
@@ -96,7 +74,7 @@ function initMap() {
         map: map,
         editable: editable,
         draggable: true,
-        radius: 500,
+        radius: radius,
     });
 
 
@@ -111,7 +89,6 @@ function initMap() {
 
 
     map.addListener("click", (e) => {
-        geocode({ location: e.latLng });
         cityCircle.setCenter(e.latLng);
     });
 
@@ -137,7 +114,7 @@ function handleLocationError(browserHasGeolocation, infoWindow, pos) {
     infoWindow.setPosition(pos);
     infoWindow.setContent(
         browserHasGeolocation
-            ? "Error: The Geolocation service failed."
+            ? "錯誤：無法取得地點，請檢查瀏覽器設定"
             : "Error: Your browser doesn't support geolocation.",
     );
     infoWindow.open(map);
@@ -148,20 +125,6 @@ function clear() {
     marker.setPosition(null);
 }
 
-function geocode(request) {
-    clear();
-    geocoder
-        .geocode(request)
-        .then((result) => {
-            const { results } = result;
-            const position = results[0].geometry.location;
-            map.setCenter(position);
-            cityCircle.setCenter(position);
-        })
-        .catch((e) => {
-            alert("Geocode was not successful for the following reason: " + e);
-        });
-}
 
 window.initMap = initMap;
 

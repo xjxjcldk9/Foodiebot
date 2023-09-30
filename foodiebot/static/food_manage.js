@@ -1,268 +1,225 @@
-let dragged;
-
-//卡片庫
-const source = document.getElementById('foodSource');
-//卡片池
-const pool = document.getElementById('foodPool');
-
-//編輯區
-const editpanel = document.getElementById('editpanel');
-
-
-const template = document.getElementById('template');
-template.style.display = "none";
-
-
-
-
-function clear_edit() {
-    const edit_blocks = document.querySelectorAll(".edit");
-
-    edit_blocks.forEach((edit_block) => {
-        edit_block.style.display = "none";
-    });
-}
-
-//把每個編輯區塊都藏起來
-clear_edit()
-
-
-
-//將在編輯區塊中的卡片新增至相對應處
-const edit_blocks = document.querySelectorAll(".edit .draggable_block");
-edit_blocks.forEach((edit_block) => {
-    const block = edit_block.cloneNode(true);
-    block.draggable = true;
-
-    if (block.classList[1] === 'on_board') {
-        pool.appendChild(block);
-    } else {
-        source.appendChild(block);
+class FoodCard {
+    constructor(category, singlepeople, manypeople, cheap, expensive, breakfast, lunch, dinner, night, hot, cold, activate) {
+        this.category = category;
+        this.singlepeople = singlepeople;
+        this.manypeople = manypeople;
+        this.cheap = cheap;
+        this.expensive = expensive;
+        this.breakfast = breakfast;
+        this.lunch = lunch;
+        this.dinner = dinner;
+        this.night = night;
+        this.hot = hot;
+        this.cold = cold;
+        this.activate = activate;
     }
-
-});
-
-
-
-//讓掉落區中的卡片可以拖曳、顯示編輯區
-
-const blocks = document.querySelectorAll(".dropzone .draggable_block");
-blocks.forEach((block) => make_block_listen(block));
-
-
-function make_block_listen(block) {
-    block.addEventListener("drag", (event) => {
-        //console.log("dragging");
-    });
-
-    block.addEventListener("dragstart", (event) => {
-        // store a ref. on the dragged elem
-        dragged = event.target;
-        // make it half transparent
-        event.target.classList.add("dragging");
-    });
-
-    block.addEventListener("dragend", (event) => {
-        // reset the transparency
-        event.target.classList.remove("dragging");
-    });
-
-
-    block.addEventListener("click", () => {
-        clear_edit();
-        const target = document.getElementById(block.textContent);
-        console.log(target);
-        target.style.display = 'block';
-    });
 }
 
 
+const container = [];
 
 
-//新增卡片
+function showContainer() {
+    const containerH = document.getElementById('container');
+    for (const foodCard of container) {
+        const card = document.createElement('div');
+        card.className = 'card';
+
+        const category = document.createElement('h2');
+        category.textContent = foodCard.category;
 
 
-const addButton = document.getElementById("add_food");
-addButton.addEventListener("click", () => {
-    clear_edit();
-    const food_edit = document.createElement('div');
-    food_edit.className = 'edit';
+        //狂加Checkbox以及Event
+        const peopleField = document.createElement('div');
 
-    editpanel.appendChild(food_edit);
+        createCheckBox('一人', peopleField, 'singlepeople', foodCard);
+        createCheckBox('多人', peopleField, 'manypeople', foodCard);
 
-    const describe_box = document.createElement('div');
-    describe_box.classList.add("draggable_block", "reserve");
+        const moneyField = document.createElement('div');
 
-    describe_box.setAttribute('contenteditable', true);
+        createCheckBox('便宜', moneyField, 'cheap', foodCard);
+        createCheckBox('昂貴', moneyField, 'expensive', foodCard);
 
+        const mealField = document.createElement('div');
 
-    food_edit.appendChild(describe_box);
+        createCheckBox('早', mealField, 'breakfast', foodCard);
+        createCheckBox('午', mealField, 'lunch', foodCard);
+        createCheckBox('晚', mealField, 'dinner', foodCard);
+        createCheckBox('宵', mealField, 'night', foodCard);
 
-    describe_box.focus();
+        const seasonField = document.createElement('div');
 
-
-    const edit_template = template.cloneNode(true);
-    edit_template.style.display = 'block';
-
-
-    food_edit.appendChild(edit_template);
+        createCheckBox('只能夏', seasonField, 'hot', foodCard);
+        createCheckBox('只能冬', seasonField, 'cold', foodCard);
 
 
-    const confirmButton = document.createElement("button");
-
-    confirmButton.textContent = "新增食物";
-    food_edit.appendChild(confirmButton);
-
-    confirmButton.addEventListener("click", () => {
-        const name = describe_box.textContent
-        if (name != null) {
-            food_edit.setAttribute('id', name);
-            const food_block = document.createElement('div');
-            food_block.textContent = name;
-            food_block.className = "draggable_block";
-            food_block.draggable = true;
-            make_block_listen(food_block);
-            source.appendChild(food_block);
-            clear_edit();
-            confirmButton.style.display = 'none';
-            describe_box.setAttribute('contenteditable', false);
-        }
-    });
-});
+        card.appendChild(category);
+        card.appendChild(peopleField);
+        card.appendChild(moneyField);
+        card.appendChild(mealField);
+        card.appendChild(seasonField);
 
 
 
-/* events fired on the drop targets */
-const targets = document.querySelectorAll(".dropzone");
-
-targets.forEach((target) => {
-
-    target.addEventListener(
-        "dragover",
-        (event) => {
-            // prevent default to allow drop
-            event.preventDefault();
-        },
-        false,
-    );
-
-    target.addEventListener("dragenter", (event) => {
-        // highlight potential drop target when the draggable element enters it
-        if (event.target.classList.contains("dropzone")) {
-            event.target.classList.add("dragover");
-        }
-    });
-
-    target.addEventListener("dragleave", (event) => {
-        // reset background of potential drop target when the draggable element leaves it
-        if (event.target.classList.contains("dropzone")) {
-            event.target.classList.remove("dragover");
-        }
-    });
-
-    target.addEventListener("drop", (event) => {
-        // prevent default action (open as link for some elements)
-        event.preventDefault();
-        // move dragged element to the selected drop target
-        if (event.target.classList.contains("dropzone")) {
-            event.target.classList.remove("dragover");
-            event.target.appendChild(dragged);
-
-            if (event.target.id === 'foodPool') {
-                const edit_block = document.getElementById(dragged.textContent).getElementsByClassName('draggable_block')[0];
-                edit_block.classList.add('on_board');
-                edit_block.classList.remove('reserve');
-
-            } else {
-                const edit_block = document.getElementById(dragged.textContent).getElementsByClassName('draggable_block')[0];
-                edit_block.classList.add('reserve');
-                edit_block.classList.remove('on_board');
+        const delBtn = document.createElement('button');
+        delBtn.textContent = '刪除卡片';
+        delBtn.addEventListener("click", () => {
+            const result = confirm(`確定刪除「${foodCard.category}」？`);
+            if (result) {
+                container.splice(container.indexOf(foodCard), 1);
+                clearShow();
+                showContainer();
             }
+        })
+        card.appendChild(delBtn);
+
+
+        const hideBtn = document.createElement('button');
+        if (foodCard.activate === 1) {
+            card.classList.remove('disabled');
+            hideBtn.textContent = '隱藏';
+        } else {
+            card.classList.add('disabled');
+            hideBtn.textContent = '啟動';
         }
-    });
 
-});
+        hideBtn.addEventListener("click", () => {
+            if (hideBtn.textContent === '隱藏') {
+                card.classList.add('disabled');
+                foodCard.activate = 0;
+                hideBtn.textContent = '啟動'
+            } else {
+                card.classList.remove('disabled');
+                foodCard.activate = 1;
+                hideBtn.textContent = '隱藏';
+            }
+        })
+        card.appendChild(hideBtn);
 
-const trash = document.querySelector(".trash");
 
+        containerH.append(card);
 
-trash.addEventListener(
-    "dragover",
-    (event) => {
-        // prevent default to allow drop
-        event.preventDefault();
-    },
-    false,
-);
-
-trash.addEventListener("dragenter", (event) => {
-    // highlight potential drop target when the draggable element enters it
-    if (event.target.classList.contains("trash")) {
-        event.target.classList.add("dragover");
     }
-});
+}
 
-trash.addEventListener("dragleave", (event) => {
-    // reset background of potential drop target when the draggable element leaves it
-    if (event.target.classList.contains("trash")) {
-        event.target.classList.remove("dragover");
+
+function createCheckBox(label, field, instance, foodCard) {
+    const check = document.createElement('input');
+    check.setAttribute('type', 'checkbox');
+    if (foodCard[instance] === 1) {
+        check.checked = true;
     }
-});
 
-trash.addEventListener("drop", (event) => {
-    // prevent default action (open as link for some elements)
-    event.preventDefault();
-    // move dragged element to the selected drop target
-    if (event.target.classList.contains("trash")) {
-        event.target.classList.remove("dragover");
-        //移除dragged
+    check.addEventListener("change", () => {
+        foodCard[instance] = (foodCard[instance] + 1) % 2;
+    })
 
-        const trashEdit = document.getElementById(dragged.textContent);
-        trashEdit.remove();
-        dragged.remove();
+    const checkLabel = document.createElement('label');
+    checkLabel.textContent = label;
+
+    field.appendChild(checkLabel);
+    field.appendChild(check);
+}
+
+
+function clearShow() {
+    const containerH = document.getElementById('container');
+    containerH.innerHTML = '';
+}
+
+
+//先把資料庫中的物件變成卡片丟上去
+async function populate() {
+    const request = new Request(get_food_url);
+    const response = await fetch(request);
+    const foods = await response.json();
+
+    addToContainer(foods);
+    showContainer();
+}
+
+
+function addToContainer(foods) {
+    for (const food of foods) {
+        const foodCard = new FoodCard(
+            category = food.category,
+            singlepeople = food.singlepeople,
+            manypeople = food.manypeople,
+            cheap = food.cheap,
+            expensive = food.expensive,
+            breakfast = food.breakfast,
+            lunch = food.lunch,
+            dinner = food.dinner,
+            night = food.night,
+            hot = food.hot,
+            cold = food.cold,
+            activate = food.activate);
+        container.push(foodCard);
     }
-});
+}
 
 
+
+const addBtn = document.getElementById('add');
+addBtn.addEventListener("click", () => {
+    const newCategory = prompt('食物名稱');
+
+    if (newCategory !== null) {
+        if (newCategory === '') {
+            alert('不能為空');
+        } else if (checkIfRepeat(newCategory)) {
+            const foodCard = new FoodCard(
+                category = newCategory,
+                singlepeople = 1,
+                manypeople = 0,
+                cheap = 1,
+                expensive = 0,
+                breakfast = 0,
+                lunch = 1,
+                dinner = 1,
+                night = 0,
+                hot = 0,
+                cold = 0,
+                activate = 1);
+            container.unshift(foodCard);
+            clearShow();
+            showContainer();
+        }
+        else {
+            alert(`「${newCategory}」已經存在`);
+        }
+
+    }
+})
+
+
+function checkIfRepeat(name) {
+    for (const foodCard of container) {
+        if (name === foodCard.category) {
+            return false;
+        }
+    }
+    return true;
+}
 
 const saveBtn = document.getElementById('save');
-
 saveBtn.addEventListener("click", () => {
-    const foods = document.querySelectorAll(".edit");
     let data = new FormData;
-
-    //Turn into binary then send I suppose:)
-
-
-    foods.forEach((food) => {
-
-        const checking = [];
-
-        const name = food.getElementsByClassName('draggable_block')[0].textContent;
-        const from_where = food.getElementsByClassName('draggable_block')[0].classList[1];
-        const infs = food.getElementsByClassName('information');
-
-        checking.push(from_where);
-
-        for (const inf of infs) {
-            checking.push(inf.checked);
-        }
-
-        data.append(name, checking);
-    });
+    data.append("foodCards", JSON.stringify(container));
 
 
-
-    fetch(url, {
+    fetch(save_food_url, {
         "method": "POST",
         "body": data,
-    }).then(response => {
-        if (response.redirected) {
-            window.location = response.url
-        } else {
-            alert("一些錯誤提示")
+    }).then(
+        response => {
+            if (response.redirected) {
+                window.location = response.url
+            } else {
+                alert("一些錯誤提示")
+            }
         }
-    });
-});
+    )
+})
 
-
+populate();

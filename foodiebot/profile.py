@@ -1,3 +1,4 @@
+import json
 import functools
 
 from flask import (
@@ -16,72 +17,61 @@ bp = Blueprint('profile', __name__, url_prefix='/profile')
 @bp.route('/manage_food', methods=('GET', 'POST'))
 @login_required
 def manage_food():
+    return render_template('profile/manage_food.html')
+
+
+@bp.route('/get_food', methods=('GET', 'POST'))
+@login_required
+def get_food():
     db = get_db()
-
-    on_board_foods = db.execute(
-        'SELECT * FROM custom_food_onboard'
-        ' WHERE user_id = ?',
+    foods_row = db.execute(
+        'SELECT * FROM custom_food WHERE user_id=?',
         (session['user_id'],)
     ).fetchall()
 
-    reserve_foods = db.execute(
-        'SELECT * FROM custom_food_reserve'
-        ' WHERE user_id = ?',
-        (session['user_id'],)
-    ).fetchall()
+    foods = []
 
-    foods = {
-        'on_board': on_board_foods,
-        'reserve': reserve_foods
-    }
+    for food in foods_row:
+        data = {}
+        data['category'] = food['category']
+        data['singlepeople'] = food['singlepeople']
+        data['manypeople'] = food['manypeople']
+        data['cheap'] = food['cheap']
+        data['expensive'] = food['expensive']
+        data['breakfast'] = food['breakfast']
+        data['lunch'] = food['lunch']
+        data['dinner'] = food['dinner']
+        data['night'] = food['night']
+        data['hot'] = food['hot']
+        data['cold'] = food['cold']
+        data['activate'] = food['activate']
 
-    return render_template('profile/manage_food.html', foods=foods)
+        foods.append(data)
+
+    return json.dumps(foods)
 
 
 @bp.route('/save_food', methods=('GET', 'POST'))
 @login_required
 def save_food():
     db = get_db()
-    if request.method == 'POST':
+    # 先刪掉原本的
 
-        def helper(text):
-            if text == 'false':
-                return 0
-            return 1
-        # 先刪掉資料庫
+    db.execute(
+        'DELETE FROM custom_food'
+        ' WHERE user_id=?',
+        (session['user_id'],)
+    )
+    db.commit()
 
+    foodCards = json.loads(request.form["foodCards"])
+
+    for foodCard in foodCards:
         db.execute(
-            'DELETE FROM custom_food_onboard'
-            ' WHERE user_id=?',
-            (session['user_id'],)
-        )
+            "INSERT INTO custom_food (category, singlepeople, manypeople, cheap, expensive, breakfast, lunch, dinner, night, hot, cold, user_id, activate) VALUES (?, ?,?,?,?,?,?,?,?,?,?,?,?)",
+            (foodCard["category"], foodCard["singlepeople"], foodCard["manypeople"], foodCard["cheap"], foodCard['expensive'], foodCard["breakfast"], foodCard["lunch"], foodCard["dinner"],
+             foodCard["night"], foodCard["hot"], foodCard["cold"], session['user_id'], foodCard["activate"]))
         db.commit()
-
-        db.execute(
-            'DELETE FROM custom_food_reserve'
-            ' WHERE user_id=?',
-            (session['user_id'],)
-        )
-        db.commit()
-
-        # 把新的資訊加入
-        for food in request.form:
-            information = request.form[food].split(',')
-
-            if information[0] == 'on_board':
-                db.execute(
-                    "INSERT INTO custom_food_onboard (category,  breakfast, lunch, dinner, night,singlepeople, manypeople, cheap, expensive, ordinary, hot, cold, user_id) VALUES (?, ?,?,?,?,?,?,?,?,?,?,?,?)",
-                    (food, helper(information[1]), helper(information[2]), helper(information[3]), helper(information[4]), helper(information[5]), helper(information[6]), helper(information[7]),
-                     helper(information[8]), helper(information[9]), helper(information[10]), helper(information[11]), session['user_id']),
-                )
-                db.commit()
-            else:
-                db.execute(
-                    "INSERT INTO custom_food_reserve (category,  breakfast, lunch, dinner, night,singlepeople, manypeople, cheap, expensive, ordinary, hot, cold, user_id) VALUES (?, ?,?,?,?,?,?,?,?,?,?,?,?)",
-                    (food, helper(information[1]), helper(information[2]), helper(information[3]), helper(information[4]), helper(information[5]), helper(information[6]), helper(information[7]),
-                     helper(information[8]), helper(information[9]), helper(information[10]), helper(information[11]), session['user_id']),
-                )
-                db.commit()
 
     return redirect(url_for('profile.manage_food'))
 
@@ -89,15 +79,27 @@ def save_food():
 @bp.route('/black_list', methods=('GET', 'POST'))
 @login_required
 def black_list():
-    db = get_db()
+    return render_template('profile/manage_black_list.html', black_list=black_list)
 
-    black_list = db.execute(
-        'SELECT * FROM custom_black_list'
-        ' WHERE user_id = ?',
-        (session['user_id'], )
+
+@bp.route('/get_black', methods=('GET', 'POST'))
+@login_required
+def get_black():
+    db = get_db()
+    blacks_row = db.execute(
+        'SELECT * FROM custom_black_list WHERE user_id=?',
+        (session['user_id'],)
     ).fetchall()
 
-    return render_template('profile/manage_black_list.html', black_list=black_list)
+    blacks = []
+
+    for black in blacks_row:
+        data = {}
+        data['name'] = black['name']
+
+        blacks.append(data)
+
+    return json.dumps(blacks)
 
 
 @bp.route('/save_black', methods=('GET', 'POST'))
@@ -110,9 +112,11 @@ def save_black():
                (session['user_id'],))
     db.commit()
 
-    for name in request.form['black'].split(','):
+    blackCards = json.loads(request.form['blackCards'])
+
+    for blackCard in blackCards:
         db.execute('INSERT INTO custom_black_list (name, user_id) VALUES (?,?)',
-                   (name, session['user_id']))
+                   (blackCard['name'], session['user_id']))
         db.commit()
 
     return redirect(url_for('profile.black_list'))

@@ -1,7 +1,8 @@
 <head>
 
     <script>
-        const url = "{{url_for('profile.save_food')}}"
+        const save_food_url = "{{url_for('profile.save_food')}}"
+        const get_food_url = "{{url_for('profile.get_food')}}"
     </script>
 
     <script defer src="{{url_for('static', filename='food_manage.js')}}"></script>
@@ -25,203 +26,17 @@
 
 {% block content %}
 
+<div class="container" id="container">
 
 
-
-<div class="container">
-    <div class="panel">
-
-        <div class="dropzone_name">
-            <h2>卡片池</h2>
-        </div>
-        <div class="dropzone" id="foodPool"></div>
-
-    </div>
-    <div class="panel">
-
-        <div class="dropzone_name">
-            <h2>卡片庫 <button class="button-xsmall pure-button" id="add_food">新增卡片</button></h2>
-        </div>
-
-
-        <div class="dropzone" id="foodSource"></div>
-
-
-    </div>
-    <div class="panel" id="editpanel">
-        <div class="dropzone_name">
-            <h2>編輯區</h2>
-        </div>
-
-
-        {% for poolOrReserve in foods%}
-        {%for food in foods[poolOrReserve] %}
-        <div class="edit" id="{{food['category']}}">
-            <div class="draggable_block {{poolOrReserve}}">{{food['category']}}</div>
-            <div>
-                <fieldset>
-                    <legend>何時吃</legend>
-                    <div>
-                        <input type="checkbox" name="breakfast" class="information" {% if food['breakfast']==1 %}
-                            checked {%endif %} />
-                        <label for="breakfast">早餐</label>
-                    </div>
-                    <div>
-                        <input type="checkbox" name="lunch" class="information" {%if food['lunch']==1%} checked
-                            {%endif%} />
-                        <label for="lunch">午餐</label>
-                    </div>
-                    <div>
-                        <input type="checkbox" name="dinner" class="information" {%if food['dinner']==1%} checked
-                            {%endif%} />
-                        <label for="dinner">晚餐</label>
-                    </div>
-
-                    <div>
-                        <input type="checkbox" name="night" class="information" {%if food['night']==1%} checked
-                            {%endif%} />
-                        <label for="sleep">宵夜</label>
-                    </div>
-                </fieldset>
-
-                <fieldset>
-                    <legend>人數</legend>
-
-                    <div>
-                        <input type="checkbox" name="single" class="information" {%if food['singlepeople']==1%} checked
-                            {%endif%} />
-                        <label for="single">適合自己吃</label>
-                    </div>
-
-                    <div>
-                        <input type="checkbox" name="multi" class="information" {%if food['manypeople']==1%} checked
-                            {%endif%} />
-                        <label for="multi">多人吃</label>
-                    </div>
-                </fieldset>
-
-                <fieldset>
-                    <legend>金錢</legend>
-
-                    <div>
-                        <input type="checkbox" name="cheap" class="information" {%if food['cheap']==1%} checked
-                            {%endif%} />
-                        <label for="cheap">便宜</label>
-                    </div>
-
-                    <div>
-                        <input type="checkbox" name="expensive" class="information" {%if food['expensive']==1%} checked
-                            {%endif%} />
-                        <label for="expensive">貴</label>
-                    </div>
-                </fieldset>
-                <fieldset>
-                    <legend>季節</legend>
-                    <div>
-                        <input type="checkbox" name="ok" class="information" {%if food['ordinary']==1%} checked
-                            {%endif%} />
-                        <label for="ok">都可以</label>
-                    </div>
-                    <div>
-                        <input type="checkbox" name="hot" class="information" {%if food['hot']==1%} checked {%endif%} />
-                        <label for="hot">只能夏天吃</label>
-                    </div>
-
-                    <div>
-                        <input type="checkbox" name="cold" class="information" {%if food['cold']==1%} checked
-                            {%endif%} />
-                        <label for="cold">只能冬天吃</label>
-                    </div>
-                </fieldset>
-            </div>
-
-        </div>
-        {%endfor%}
-        {%endfor%}
-        <div class="trash"><i class="fa-solid fa-trash-can"></i></div>
-    </div>
 </div>
 
-<br>
-<button id="save">儲存變更</button>
-<a class="button-warning pure-button" href="{{ url_for('profile.black_list') }}">管理黑名單</a>
-<p>只有卡片池內的類別才會被搜尋</p>
-<p>卡片庫可以新增卡片</p>
-<p>透過拖拉的方式移動卡片位置、或刪除卡片</p>
-<p>點擊卡片可以編輯卡片屬性</p>
 
+<button class="button-secondary pure-button" id="add">新增卡片</button>
+<button class="button-success pure-button" id="save">儲存變更</button>
 
-<p>記得按下<span>儲存</span>才會更新</p>
+<a style="float: right;" class="button-warning pure-button" href="{{ url_for('profile.black_list') }}">管理黑名單</a>
 
-<div id="template">
-    <fieldset>
-        <legend>何時吃</legend>
-
-        <div>
-            <input type="checkbox" name="breakfast" class="information" checked />
-            <label for="breakfast">早餐</label>
-        </div>
-
-        <div>
-            <input type="checkbox" name="lunch" class="information" />
-            <label for="lunch">午餐</label>
-        </div>
-
-        <div>
-            <input type="checkbox" name="dinner" class="information" />
-            <label for="dinner">晚餐</label>
-        </div>
-
-        <div>
-            <input type="checkbox" name="sleep" class="information" />
-            <label for="sleep">宵夜</label>
-        </div>
-    </fieldset>
-
-    <fieldset>
-        <legend>人數</legend>
-
-        <div>
-            <input type="checkbox" name="single" checked class="information" />
-            <label for="single">適合自己吃</label>
-        </div>
-
-        <div>
-            <input type="checkbox" id="horns" name="multi" class="information" />
-            <label for="multi">多人吃</label>
-        </div>
-    </fieldset>
-
-    <fieldset>
-        <legend>金錢</legend>
-
-        <div>
-            <input type="checkbox" name="cheap" checked class="information" />
-            <label for="cheap">便宜</label>
-        </div>
-
-        <div>
-            <input type="checkbox" name="expensive" class="information" />
-            <label for="expensive">貴</label>
-        </div>
-    </fieldset>
-    <fieldset>
-        <legend>季節</legend>
-        <div>
-            <input type="checkbox" name="ok" checked class="information" />
-            <label for="ok">都可以</label>
-        </div>
-        <div>
-            <input type="checkbox" name="hot" checked class="information" />
-            <label for="hot">只能夏天吃</label>
-        </div>
-
-        <div>
-            <input type="checkbox" name="cold" class="information" />
-            <label for="cold">只能冬天吃</label>
-        </div>
-    </fieldset>
-</div>
 
 
 

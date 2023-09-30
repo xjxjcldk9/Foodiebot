@@ -1,10 +1,9 @@
 <head>
 
     <script>
-        {% if not session['user_id'] %}
         let login = false;
-        {%else %}
-        let login = true;
+        {% if session['user_id'] %}
+        login = true;
         {% endif %}
 
         let myLocation;
@@ -61,7 +60,6 @@
 
 
 
-<p></p>
 
 
 <button class="pure-button" id="otherparamsButton">其他參數</button>
@@ -80,7 +78,6 @@
 </form>
 
 
-<p></p>
 
 
 

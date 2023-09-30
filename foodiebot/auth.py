@@ -79,21 +79,12 @@ def register():
                     'SELECT * FROM default_food'
                 ).fetchall()
 
-                A = default_food[:len(default_food)-10]
-                B = default_food[-10:]
-
-                for food in A:
+                # 給新註冊的用戶新增初始食物
+                for food in default_food:
                     db.execute(
-                        "INSERT INTO custom_food_onboard (category, singlepeople, manypeople, cheap, expensive, breakfast, lunch, dinner, night, ordinary, hot, cold, user_id) VALUES (?, ?,?,?,?,?,?,?,?,?,?,?,?)",
+                        "INSERT INTO custom_food (category, singlepeople, manypeople, cheap, expensive, breakfast, lunch, dinner, night, hot, cold, user_id, activate) VALUES (?, ?,?,?,?,?,?,?,?,?,?,?,?)",
                         (food["category"], food["singlepeople"], food["manypeople"], food["cheap"], food['expensive'], food["breakfast"], food["lunch"], food["dinner"],
-                            food["night"], food["ordinary"], food["hot"], food["cold"], user['id']),
-                    )
-                    db.commit()
-                for food in B:
-                    db.execute(
-                        "INSERT INTO custom_food_reserve (category, singlepeople, manypeople, cheap, expensive, breakfast, lunch, dinner, night, ordinary, hot, cold, user_id) VALUES (?, ?,?,?,?,?,?,?,?,?,?,?,?)",
-                        (food["category"], food["singlepeople"], food["manypeople"], food["cheap"], food['expensive'], food["breakfast"], food["lunch"], food["dinner"],
-                            food["night"], food["ordinary"], food["hot"], food["cold"], user['id']),
+                            food["night"], food["hot"], food["cold"], user['id'], 1),
                     )
                     db.commit()
 
@@ -101,6 +92,7 @@ def register():
                     'SELECT * FROM default_black_list'
                 ).fetchall()
 
+                # 給新註冊的用戶新增黑名單
                 for black in default_black_list:
                     db.execute(
                         'INSERT INTO custom_black_list (name, user_id) VALUES (?,?)',
