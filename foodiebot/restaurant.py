@@ -28,7 +28,7 @@ gmaps = googlemaps.Client(key=api_key)
 
 @bp.route('/user_input', methods=('GET', 'POST'))
 def user_input():
-    session['IP'] = request.remote_addr
+
     error = None
     if request.method == 'POST':
         parameters = json.loads(request.form['parameters'])
@@ -56,28 +56,32 @@ def user_input():
 def show_result():
     # 先檢查是否已填過表單
     # 是否登入
-    if not session.get('user_id'):
-        who = 1
-    else:
-        who = session['user_id']
+    who = whoLogIn()
 
     db = get_db()
     filled = db.execute(
         'SELECT * FROM response'
         ' WHERE IP = ? AND user_id = ? AND restaurant = ?',
-        (session['IP'], who, session['result']['name'])
+        (request.remote_addr, who, session['result']['name'])
     ).fetchone()
 
     if request.method == 'POST':
         db.execute(
             'INSERT INTO response (IP, ts, user_id, category, restaurant, response) VALUES (?,CURRENT_TIMESTAMP,?,?,?,?)',
-            (session['IP'], who, session['category'],
+            (request.remote_addr, who, session['category'],
              session['result']['name'], request.form['response'])
         )
         db.commit()
         return redirect(url_for('restaurant.show_result'))
 
     return render_template('restaurant/show_result.html', filled=filled)
+
+
+def whoLogIn():
+    if not g.user:
+        return 1
+    else:
+        return g.user['id']
 
 
 def get_categories_BL(parameters):
@@ -96,20 +100,17 @@ def get_categories_BL(parameters):
         meal = ' AND night=1'
 
     # 季節
-    if now_month in range(7, 11):
+    if now_month in range(7, 10):
         # 有些東西要炎熱才會吃
         season = ' AND hot=1'
-    elif now_month in range(1, 5) or now_month == 12:
+    elif now_month in range(1, 4) or now_month == 12:
         # 有些東西要寒冷才會吃
         season = ' AND cold=1'
     else:
         season = ''
 
     # 是否登入
-    if not session.get('user_id'):
-        who = 1
-    else:
-        who = session['user_id']
+    who = whoLogIn()
 
     db = get_db()
     categories_row = db.execute(

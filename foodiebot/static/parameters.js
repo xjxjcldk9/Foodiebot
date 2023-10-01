@@ -4,6 +4,8 @@ const directSearch = document.getElementById("directSearch");
 const otherParamsBtn = document.getElementById("otherParamsBtn");
 const otherParams = document.getElementById("otherParams");
 
+const people = document.getElementById('people');
+
 //先隱藏參數
 directSearch.style.display = "none";
 otherParams.style.display = "none";
@@ -19,9 +21,11 @@ directSearchBtn.addEventListener("click", () => {
     if (directSearch.style.display === "none") {
         directSearch.style.display = "block";
         directSearchBtn.classList.add("pure-button-active");
+        people.style.display = "none";
     } else {
         directSearch.style.display = "none";
         directSearchBtn.classList.remove("pure-button-active");
+        people.style.display = "block";
     }
 })
 

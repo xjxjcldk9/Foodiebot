@@ -1,7 +1,7 @@
 <head>
     <script>
         let login = false;
-        {% if session['user_id'] %}
+        {% if g.user %}
         login = true;
         {% endif %}
 
@@ -29,10 +29,10 @@
 {% block header %}
 
 <h1>{% block title %}
-    {% if not session['user_id'] %}
-    訪客模式
-    {% else %}
+    {% if g.user %}
     登入模式
+    {% else %}
+    訪客模式
     {% endif %}
     {% endblock %}</h1>
 
@@ -41,13 +41,13 @@
 
 {% block content %}
 <p>請在地圖上釘選想搜尋的地點</p>
-{% if not session['user_id'] %}
+{% if not g.user %}
 <p>登入後有更多功能</p>
 {%else %}
 <p>可以在地圖上調控搜尋範圍</p>
 <p>其他參數可以調整價格、人數、星等</p>
-<p>當按下<span>抽抽</span>，會自動至卡片池隨機抽選一個類別做搜尋</p>
-<p>也可以使用進階搜尋直接找尋想要的類別</p>
+<p>按下<span>抽抽</span>，會至食物管理中隨機抽取食物搜尋</p>
+<p>也可以透過直接搜尋找尋想要的商店類型</p>
 {% endif %}
 
 <p></p>
@@ -78,14 +78,14 @@
 <p></p>
 
 <div id="otherParams">
-    <div class="division">
+    <div class="division" id="money">
         <i class="fa-solid fa-coins "></i>
         <input type="checkbox" id="cheap" checked>
         <label for="cheap">便宜的</label>
         <input type="checkbox" id="expensive">
         <label for="expensive">貴的</label>
     </div>
-    <div class="division">
+    <div class="division" id="people">
         <i class="fa-solid fa-people-group"></i>
         <input type="checkbox" id="singlepeople" checked>
         <label for="singlepeople">自己吃</label>

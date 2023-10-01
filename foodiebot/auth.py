@@ -33,13 +33,9 @@ def login():
             error = '密碼錯誤'
 
         else:
-
             session.clear()
             session['user_id'] = user['id']
-            session['user_name'] = user['username']
 
-            # 一些儲存的東西
-            session['result'] = []
             return redirect(url_for('restaurant.user_input'))
         flash(error)
     return render_template('auth/login.html')
@@ -114,9 +110,14 @@ def load_logged_in_user():
     if user_id is None:
         g.user = None
     else:
-        g.user = get_db().execute(
+        user = get_db().execute(
             'SELECT * FROM user WHERE id = ?', (user_id,)
         ).fetchone()
+        # 重設資料庫
+        if user == None:
+            session.clear()
+        else:
+            g.user = user
 
 
 @bp.route('/logout')

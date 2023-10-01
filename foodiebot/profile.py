@@ -26,7 +26,7 @@ def get_food():
     db = get_db()
     foods_row = db.execute(
         'SELECT * FROM custom_food WHERE user_id=?',
-        (session['user_id'],)
+        (g.user['id'],)
     ).fetchall()
 
     foods = []
@@ -60,7 +60,7 @@ def save_food():
     db.execute(
         'DELETE FROM custom_food'
         ' WHERE user_id=?',
-        (session['user_id'],)
+        (g.user['id'],)
     )
     db.commit()
 
@@ -70,7 +70,7 @@ def save_food():
         db.execute(
             "INSERT INTO custom_food (category, singlepeople, manypeople, cheap, expensive, breakfast, lunch, dinner, night, hot, cold, user_id, activate) VALUES (?, ?,?,?,?,?,?,?,?,?,?,?,?)",
             (foodCard["category"], foodCard["singlepeople"], foodCard["manypeople"], foodCard["cheap"], foodCard['expensive'], foodCard["breakfast"], foodCard["lunch"], foodCard["dinner"],
-             foodCard["night"], foodCard["hot"], foodCard["cold"], session['user_id'], foodCard["activate"]))
+             foodCard["night"], foodCard["hot"], foodCard["cold"], g.user['id'], foodCard["activate"]))
         db.commit()
 
     return redirect(url_for('profile.manage_food'))
@@ -88,7 +88,7 @@ def get_black():
     db = get_db()
     blacks_row = db.execute(
         'SELECT * FROM custom_black_list WHERE user_id=?',
-        (session['user_id'],)
+        (g.user['id'],)
     ).fetchall()
 
     blacks = []
@@ -109,14 +109,14 @@ def save_black():
     db = get_db()
     db.execute('DELETE FROM custom_black_list'
                ' WHERE user_id=?',
-               (session['user_id'],))
+               (g.user['id'],))
     db.commit()
 
     blackCards = json.loads(request.form['blackCards'])
 
     for blackCard in blackCards:
         db.execute('INSERT INTO custom_black_list (name, user_id) VALUES (?,?)',
-                   (blackCard['name'], session['user_id']))
+                   (blackCard['name'], g.user['id']))
         db.commit()
 
     return redirect(url_for('profile.black_list'))

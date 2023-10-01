@@ -13,6 +13,7 @@
 {% extends 'base.html' %}
 
 
+
 {% block header %}
 
 <h1>{% block title %}黑名單管理{% endblock %}</h1>
@@ -26,6 +27,12 @@
 
 {% block content %}
 
+<p>
+    搜尋結果將自動過濾黑名單中的詞彙
+</p>
+<p>編輯完畢記得按下儲存變更</p>
+
+
 <div class="container" id="container">
 
 
@@ -35,6 +42,8 @@
 <button class="button-secondary pure-button" id="add">新增黑名單</button>
 <button class="button-success pure-button" id="save">儲存變更</button>
 
+
+<a style="float: right;" class="button-error pure-button" href="{{ url_for('restaurant.user_input') }}">回到地圖</a>
 <a style="float: right;" class="button-warning pure-button" href="{{ url_for('profile.manage_food') }}">管理食物</a>
 
 
