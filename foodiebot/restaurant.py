@@ -1,7 +1,7 @@
 from numpy import sin, cos, arccos
 import random
 from retry import retry
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 import os
 import numpy as np
 import googlemaps
@@ -86,8 +86,10 @@ def whoLogIn():
 
 def get_categories_BL(parameters):
 
-    now_hour = datetime.now().hour
-    now_month = datetime.now().month
+    tz = timezone(timedelta(hours=+8))
+
+    now_hour = datetime.now(tz).hour
+    now_month = datetime.now(tz).month
 
     # 處理時間
     if now_hour in range(10, 16):
@@ -95,7 +97,7 @@ def get_categories_BL(parameters):
     elif now_hour in range(16, 22):
         meal = ' AND dinner=1'
     elif now_hour in range(5, 10):
-        meal = ' AND morning=1'
+        meal = ' AND breakfast=1'
     else:
         meal = ' AND night=1'
 
