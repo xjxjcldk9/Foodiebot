@@ -9,7 +9,7 @@ def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
         SECRET_KEY='c3624826cfab80f8433a7730a49441f60ad0f6891ff05b95cfbba0921cf98245',
-        DATABASE=os.path.join(app.instance_path, 'foodiebot.sqlite'),
+        DATABASE=os.path.join(app.instance_path, 'foodiebot.sqlite')
     )
 
     try:

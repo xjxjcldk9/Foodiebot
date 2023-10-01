@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+
+{% block header %}
+
+<h1>{% block title %}錯誤{% endblock %}</h1>
+
+{% endblock %}
+
+
+{% block content %}
+
+<p>很遺憾找不到結果，請調整參數或是重新設定位置</p>
+
+<a class="button-success pure-button" href="{{ url_for('restaurant.user_input') }}">回到地圖</a>
+
+{% endblock %}

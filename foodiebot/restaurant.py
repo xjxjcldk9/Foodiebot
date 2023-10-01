@@ -28,10 +28,9 @@ gmaps = googlemaps.Client(key=api_key)
 
 @bp.route('/user_input', methods=('GET', 'POST'))
 def user_input():
-
-    error = None
     if request.method == 'POST':
         parameters = json.loads(request.form['parameters'])
+        session['parameters'] = parameters
         categories, black_list = get_categories_BL(parameters)
 
         if parameters['manual'] != '':
@@ -40,16 +39,18 @@ def user_input():
             categories, black_list, parameters)
 
         if result is None:
-            error = '查無結果 請調整參數或更改位置'
+            return redirect(url_for('restaurant.error'))
         else:
             session['category'] = category
             session['result'] = result
             return redirect(url_for('restaurant.show_result'))
 
-    if error is not None:
-        flash(error)
-
     return render_template('restaurant/user_input.html')
+
+
+@bp.route('/error')
+def error():
+    return render_template('restaurant/error.html')
 
 
 @bp.route('/show_result', methods=('GET', 'POST'))
@@ -145,10 +146,10 @@ def get_categories_BL(parameters):
 @retry((Exception), tries=3, delay=2, backoff=0)
 def get_restaurant(categories, black_list, parameters):
 
-    if parameters['cheap'] == 1 & parameters['expensive'] == 0:
+    if parameters['cheap'] == 1 and parameters['expensive'] == 0:
         min_price = 0
         max_price = 1
-    elif parameters['cheap'] == 0 & parameters['expensive'] == 1:
+    elif parameters['cheap'] == 1 and parameters['expensive'] == 1:
         min_price = 2
         max_price = 4
     else:
@@ -156,7 +157,14 @@ def get_restaurant(categories, black_list, parameters):
         max_price = 4
 
     final_result = []
-    for category in categories:
+
+    # 加快搜尋結果
+    if len(categories) > 10:
+        trimcategories = categories[:10]
+    else:
+        trimcategories = categories
+
+    for category in trimcategories:
         results = gmaps.places(query=category,
                                location=parameters['location'],
                                radius=parameters['radius'] * 1000,
@@ -169,6 +177,7 @@ def get_restaurant(categories, black_list, parameters):
         for restaurant in results['results']:
             if (restaurant['rating'] >= parameters['star'] and
                 check_black(restaurant['name'], black_list) and
+                restaurant['price_level'] <= max_price and restaurant['price_level'] >= min_price and
                     calculate_distance(parameters['location'], restaurant['geometry']['location']) <= parameters['radius']):
 
                 final_result.append(restaurant)

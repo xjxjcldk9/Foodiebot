@@ -129,8 +129,6 @@ postButton.addEventListener('click', () => {
             response => {
                 if (response.redirected) {
                     window.location = response.url
-                } else {
-                    alert("一些錯誤提示")
                 }
             }
         );

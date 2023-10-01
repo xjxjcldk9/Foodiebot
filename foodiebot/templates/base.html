@@ -33,9 +33,9 @@
 
 
 
-        {% if session['user_id'] %}
+        {% if g.user %}
 
-        <li><span>{{ session['user_name'] }}</span>
+        <li><span>{{ g.user['username'] }}</span>
         <li><a href="{{ url_for('profile.manage_food') }}">管理食物</a>
         <li><a href="{{ url_for('auth.logout') }}">登出</a>
 

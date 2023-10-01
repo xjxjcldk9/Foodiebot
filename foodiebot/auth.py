@@ -12,9 +12,6 @@ from foodiebot.db import get_db
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 
-# 這邊需要更改
-
-
 @bp.route('/login', methods=('GET', 'POST'))
 def login():
     if request.method == 'POST':
