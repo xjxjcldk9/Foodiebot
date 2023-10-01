@@ -29,7 +29,7 @@ def login():
 
         if user is None:
             error = '無此使用者'
-        elif request.form['stacked-password'] != user['password']:
+        elif not check_password_hash(user['password'], request.form['stacked-password']):
             error = '密碼錯誤'
 
         else:
@@ -57,7 +57,7 @@ def register():
             try:
                 db.execute(
                     'INSERT INTO user (username, email, password, gender, birthday) VALUES (?,?,?,?,?)',
-                    (request.form['stacked-name'], request.form['stacked-email'], request.form['stacked-password'],
+                    (request.form['stacked-name'], request.form['stacked-email'], generate_password_hash(request.form['stacked-password']),
                      gender, birthday)
                 )
 
