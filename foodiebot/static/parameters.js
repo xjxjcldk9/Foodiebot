@@ -96,14 +96,13 @@ star.addEventListener("input", (event) => {
 const postButton = document.getElementById('postButton');
 postButton.addEventListener('click', () => {
 
-    const loader = document.createElement('div')
-    loader.className = 'Loader'
-    postButton.parentElement.appendChild(loader);
-
     if (myLocation == null) {
         alert("請標註地點");
     }
     else {
+        const loader = document.createElement('div')
+        loader.className = 'Loader'
+        postButton.parentElement.appendChild(loader);
 
 
 
