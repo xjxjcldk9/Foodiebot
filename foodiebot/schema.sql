@@ -98,10 +98,10 @@ FOREIGN KEY (user_id) REFERENCES user (id)
 
 INSERT INTO custom_black_list (user_id, name)
 VALUES
-(1, '八方雲集'),
-(1, '星巴克'),
-(1, '路易莎'),
-(1, '麥當勞'),
+(1, '八方雲'),
+(1, '星巴'),
+(1, '路易'),
+(1, '麥當'),
 (1, '生水餃'),
 (1, '冷凍'),
 (1, '素')
