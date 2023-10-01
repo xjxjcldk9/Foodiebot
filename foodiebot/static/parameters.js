@@ -12,7 +12,7 @@ otherParams.style.display = "none";
 
 //若無登入則不顯示按鈕
 if (!login) {
-    otherParamsBtn.style.display = "none";
+    //otherParamsBtn.style.display = "none";
     directSearchBtn.style.display = "none";
 }
 

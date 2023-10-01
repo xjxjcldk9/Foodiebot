@@ -149,7 +149,7 @@ def get_restaurant(categories, black_list, parameters):
     if parameters['cheap'] == 1 and parameters['expensive'] == 0:
         min_price = 0
         max_price = 1
-    elif parameters['cheap'] == 1 and parameters['expensive'] == 1:
+    elif parameters['cheap'] == 0 and parameters['expensive'] == 1:
         min_price = 2
         max_price = 4
     else:
@@ -177,7 +177,8 @@ def get_restaurant(categories, black_list, parameters):
         for restaurant in results['results']:
             if (restaurant['rating'] >= parameters['star'] and
                 check_black(restaurant['name'], black_list) and
-                restaurant['price_level'] <= max_price and restaurant['price_level'] >= min_price and
+                restaurant['price_level'] <= max_price and
+                restaurant['price_level'] >= min_price and
                     calculate_distance(parameters['location'], restaurant['geometry']['location']) <= parameters['radius']):
 
                 final_result.append(restaurant)
