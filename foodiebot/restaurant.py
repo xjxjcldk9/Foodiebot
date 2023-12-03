@@ -33,6 +33,11 @@ def user_input():
         session['parameters'] = parameters
         categories, black_list = get_categories_BL(parameters)
 
+        # check search
+        session['categories'] = categories
+        session['black_list'] = black_list
+        return redirect(url_for('restaurant.test'))
+
         if parameters['manual'] != '':
             categories = [parameters['manual']]
         category, result = get_restaurant(
@@ -46,6 +51,11 @@ def user_input():
             return redirect(url_for('restaurant.show_result'))
 
     return render_template('restaurant/user_input.html')
+
+
+@bp.route('/test')
+def test():
+    return render_template('restaurant/test.html')
 
 
 @bp.route('/error')
@@ -119,18 +129,15 @@ def get_categories_BL(parameters):
     categories_row = db.execute(
         ' SELECT category FROM custom_food'
         ' WHERE user_id = ?'
-        ' AND singlepeople = ?'
-        ' AND manypeople = ?'
         ' AND cheap = ?'
         ' AND expensive = ?'
         + meal
-        + season
         + ' AND activate = 1',
-        (who, parameters['singlepeople'], parameters['manypeople'],
-         parameters['cheap'], parameters['expensive'])
+        (who, parameters['cheap'], parameters['expensive'])
     ).fetchall()
 
     categories = [category_row['category'] for category_row in categories_row]
+
     random.shuffle(categories)
 
     black_list_row = db.execute(
