@@ -10,7 +10,6 @@
 
 {% block content %}
 
-<p><span>顯示詳細地圖</span>將開啟GoogleMap</p>
 {% if 1%}
 <iframe width="100%" height="450" style="border:0" loading="lazy" allowfullscreen
     referrerpolicy="no-referrer-when-downgrade" src="https://www.google.com/maps/embed/v1/place?key=AIzaSyAd5FeE-Wb0Bc9r2uHPZngmVuOIi1cYJT8
@@ -24,28 +23,12 @@
 
 <hr>
 
-
-{%if not filled%}
-<script> const url = "{{url_for('restaurant.show_result')}}";
-
-</script>
-<script defer src="{{url_for('static', filename='store_response.js')}}"></script>
-喜歡這個推薦嗎？
-<button class="pure-button" , id='good'><i class="fa-regular fa-face-smile"></i></button>
-<button class="pure-button" , id='bad'><i class="fa-regular fa-face-frown"></i></button>
-<button class="button-secondary pure-button" , id='fire'>送出</button>
-
-{%else%}
-
-
 <p></p>
 
 
 <a style="float: right;" class="button-error pure-button " href="{{ url_for('restaurant.user_input') }}">重新抽抽</a>
 <a class="button-warning pure-button" target="_blank" href="https://forms.gle/9xn5tsGx6gp3fk4x7">問題回報！</a>
 
-
-{%endif%}
 
 
 

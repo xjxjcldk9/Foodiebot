@@ -6,8 +6,10 @@ import os
 import numpy as np
 import googlemaps
 
+import time
 import re
 import json
+import secrets
 
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for
@@ -31,17 +33,35 @@ def user_input():
     if request.method == 'POST':
         parameters = json.loads(request.form['parameters'])
         session['parameters'] = parameters
-        categories, black_list = get_categories_BL(parameters)
 
-        # check search
-        session['categories'] = categories
-        session['black_list'] = black_list
-        return redirect(url_for('restaurant.test'))
-
+        categories = []
         if parameters['manual'] != '':
             categories = [parameters['manual']]
-        category, result = get_restaurant(
-            categories, black_list, parameters)
+        else:
+            # sort categories according to weight
+            categories_weight = {'Chinese restaurant': 3, 'Chicken restaurant': 2,
+                                 'Ramen restaurant': 1, 'Cold noodle restaurant': 1,
+                                 'Deli': 10, 'Restaurant': 10, 'Italian restaurant': 2,
+                                 'Noodle shop': 8, 'Chinese noodle restaurant': 3,
+                                 'Dumpling restaurant': 2, 'Cantonese restaurant': 4,
+                                 'Porridge restaurant': 1, 'Taiwanese restaurant': 4,
+                                 'Hong Kong style fast food restaurant': 3, 'Mandarin restaurant': 4}
+
+            p = np.zeros(len(categories_weight))
+            i = 0
+            for key, val in categories_weight.items():
+                categories.append(key)
+                p[i] = val
+                i += 1
+
+            p /= p.sum()
+
+            rng = np.random.default_rng(secrets.randbits(128))
+
+            categories = rng.choice(categories, size=len(
+                categories), replace=False, p=p)
+
+        category, result = get_restaurant(parameters, categories)
 
         if result is None:
             return redirect(url_for('restaurant.error'))
@@ -65,93 +85,11 @@ def error():
 
 @bp.route('/show_result', methods=('GET', 'POST'))
 def show_result():
-    # 先檢查是否已填過表單
-    # 是否登入
-    who = whoLogIn()
-
-    db = get_db()
-    filled = db.execute(
-        'SELECT * FROM response'
-        ' WHERE IP = ? AND user_id = ? AND restaurant = ?',
-        (request.remote_addr, who, session['result']['name'])
-    ).fetchone()
-
-    if request.method == 'POST':
-        db.execute(
-            'INSERT INTO response (IP, ts, user_id, category, restaurant, response) VALUES (?,CURRENT_TIMESTAMP,?,?,?,?)',
-            (request.remote_addr, who, session['category'],
-             session['result']['name'], request.form['response'])
-        )
-        db.commit()
-        return redirect(url_for('restaurant.show_result'))
-
-    return render_template('restaurant/show_result.html', filled=filled)
-
-
-def whoLogIn():
-    if not g.user:
-        return 1
-    else:
-        return g.user['id']
-
-
-def get_categories_BL(parameters):
-
-    tz = timezone(timedelta(hours=+8))
-
-    now_hour = datetime.now(tz).hour
-    now_month = datetime.now(tz).month
-
-    # 處理時間
-    if now_hour in range(10, 16):
-        meal = ' AND lunch=1'
-    elif now_hour in range(16, 22):
-        meal = ' AND dinner=1'
-    elif now_hour in range(5, 10):
-        meal = ' AND breakfast=1'
-    else:
-        meal = ' AND night=1'
-
-    # 季節
-    if now_month in range(7, 10):
-        # 有些東西要炎熱才會吃
-        season = ' AND hot=1'
-    elif now_month in range(1, 4) or now_month == 12:
-        # 有些東西要寒冷才會吃
-        season = ' AND cold=1'
-    else:
-        season = ''
-
-    # 是否登入
-    who = whoLogIn()
-
-    db = get_db()
-    categories_row = db.execute(
-        ' SELECT category FROM custom_food'
-        ' WHERE user_id = ?'
-        ' AND cheap = ?'
-        ' AND expensive = ?'
-        + meal
-        + ' AND activate = 1',
-        (who, parameters['cheap'], parameters['expensive'])
-    ).fetchall()
-
-    categories = [category_row['category'] for category_row in categories_row]
-
-    random.shuffle(categories)
-
-    black_list_row = db.execute(
-        ' SELECT name FROM custom_black_list'
-        ' WHERE user_id = ?',
-        (who, )
-    )
-    black_list = [black['name'] for black in black_list_row]
-
-    return categories, black_list
+    return render_template('restaurant/show_result.html')
 
 
 @retry((Exception), tries=3, delay=2, backoff=0)
-def get_restaurant(categories, black_list, parameters):
+def get_restaurant(parameters, categories):
 
     if parameters['cheap'] == 1 and parameters['expensive'] == 0:
         min_price = 0
@@ -163,43 +101,48 @@ def get_restaurant(categories, black_list, parameters):
         min_price = 0
         max_price = 4
 
-    final_result = []
+    restaurants = []
 
-    # 加快搜尋結果
-    if len(categories) > 10:
-        trimcategories = categories[:10]
-    else:
-        trimcategories = categories
+    # 抽取
+    for category in categories[:7]:
+        places_params = {
+            'query': category,
+            'location': parameters['location'],
+            'radius': parameters['radius'] * 1000,
+            'language': 'zh-TW',
+            'min_price': min_price,
+            'max_price': max_price,
+            'open_now': parameters['open']
+        }
 
-    for category in trimcategories:
-        results = gmaps.places(query=category,
-                               location=parameters['location'],
-                               radius=parameters['radius'] * 1000,
-                               language='zh-TW',
-                               min_price=min_price,
-                               max_price=max_price,
-                               open_now=parameters['open'])
+        search_results = gmaps.places(**places_params)
 
-        # 過濾黑名單, 過濾評分太低, 距離
-        for restaurant in results['results']:
-            if (restaurant['rating'] >= parameters['star'] and
-                check_black(restaurant['name'], black_list) and
-                restaurant['price_level'] <= max_price and
-                restaurant['price_level'] >= min_price and
-                    calculate_distance(parameters['location'], restaurant['geometry']['location']) <= parameters['radius']):
+        append_restaurant(search_results, parameters,
+                          restaurants, max_price, min_price)
 
-                final_result.append(restaurant)
+        while search_results.get('next_page_token'):
+            time.sleep(2)
+            places_params['page_token'] = search_results.get('next_page_token')
+            search_results = gmaps.places(**places_params)
+            append_restaurant(search_results, parameters,
+                              restaurants, max_price, min_price)
 
-        if len(final_result) >= 1:
-            return category, np.random.choice(final_result)
+        if len(restaurants) > 0:
+            rng = np.random.default_rng(secrets.randbits(128))
+            result = rng.choice(restaurants, size=1)[0]
+            return category, result
+
     return None, None
 
 
-def check_black(name, black_list):
-    for black in black_list:
-        if black in name:
-            return False
-    return True
+def append_restaurant(search_results, parameters, restaurants, max_price, min_price):
+    for restaurant in search_results['results']:
+        if (restaurant['rating'] >= parameters['star'] and
+            restaurant['price_level'] <= max_price and
+            restaurant['price_level'] >= min_price and
+                calculate_distance(parameters['location'], restaurant['geometry']['location']) <= parameters['radius']):
+
+            restaurants.append(restaurant)
 
 
 def calculate_distance(location, place):
