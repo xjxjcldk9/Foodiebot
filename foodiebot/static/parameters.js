@@ -1,51 +1,10 @@
-const directSearchBtn = document.getElementById("directSearchBtn");
 const directSearch = document.getElementById("directSearch");
 
-const otherParamsBtn = document.getElementById("otherParamsBtn");
 const otherParams = document.getElementById("otherParams");
-
-const people = document.getElementById('people');
-
-//先隱藏參數
-directSearch.style.display = "none";
-otherParams.style.display = "none";
-
-//若無登入則不顯示按鈕
-if (!login) {
-    //otherParamsBtn.style.display = "none";
-    directSearchBtn.style.display = "none";
-}
-
-
-directSearchBtn.addEventListener("click", () => {
-    if (directSearch.style.display === "none") {
-        directSearch.style.display = "block";
-        directSearchBtn.classList.add("pure-button-active");
-        people.style.display = "none";
-    } else {
-        directSearch.style.display = "none";
-        directSearchBtn.classList.remove("pure-button-active");
-        people.style.display = "block";
-    }
-})
-
-otherParamsBtn.addEventListener("click", () => {
-    if (otherParams.style.display === "none") {
-        otherParams.style.display = "block";
-        otherParamsBtn.classList.add("pure-button-active");
-    } else {
-        otherParams.style.display = "none";
-        otherParamsBtn.classList.remove("pure-button-active");
-    }
-})
-
 
 
 const cheap = document.getElementById("cheap");
 const expensive = document.getElementById("expensive");
-
-const singlepeople = document.getElementById("singlepeople");
-const manypeople = document.getElementById("manypeople");
 
 const open = document.getElementById("open");
 
@@ -66,20 +25,6 @@ expensive.addEventListener("click", () => {
         cheap.checked = true;
     }
 });
-
-singlepeople.addEventListener("click", () => {
-    if (!singlepeople.checked && !manypeople.checked) {
-        manypeople.checked = true;
-    }
-});
-
-
-manypeople.addEventListener("click", () => {
-    if (!singlepeople.checked && !manypeople.checked) {
-        singlepeople.checked = true;
-    }
-});
-
 
 
 starOutput.textContent = star.value;
@@ -108,17 +53,14 @@ postButton.addEventListener('click', () => {
 
         let data = new FormData;
         let parameters = {};
-        parameters.location = { 'lat': myLocation.lat(), 'lng': myLocation.lng() };
+        parameters.location = { "lat": myLocation.lat(), "lng": myLocation.lng() };
         //這邊是公尺
         parameters.radius = radius / 1000;
         parameters.cheap = checkedToNum(cheap);
         parameters.expensive = checkedToNum(expensive);
-        parameters.singlepeople = checkedToNum(singlepeople);
-        parameters.manypeople = checkedToNum(manypeople);
         parameters.open = checkedToNum(open);
         parameters.star = Number(star.value);
         parameters.manual = manual.value;
-
         data.append('parameters', JSON.stringify(parameters));
 
 

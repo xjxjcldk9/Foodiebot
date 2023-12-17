@@ -1,24 +1,15 @@
 from numpy import sin, cos, arccos
-import random
 from retry import retry
-from datetime import datetime, timezone, timedelta
-import os
 import numpy as np
 import googlemaps
 
 import time
-import re
 import json
 import secrets
 
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for
 )
-from werkzeug.security import check_password_hash, generate_password_hash
-from werkzeug.exceptions import abort
-
-from foodiebot.auth import login_required
-from foodiebot.db import get_db
 
 
 bp = Blueprint('restaurant', __name__, url_prefix='/restaurant')
@@ -26,6 +17,17 @@ bp = Blueprint('restaurant', __name__, url_prefix='/restaurant')
 
 api_key = 'AIzaSyC5FeD_HmfWXFtg-q1_3U5UXgLGzWXFxQE'
 gmaps = googlemaps.Client(key=api_key)
+
+
+black_name_list = ['星巴客', '八方', '冷凍', '麥當勞', '肯德基']
+
+categories_weight = {'Chinese restaurant': 3, 'Chicken restaurant': 2,
+                     'Ramen restaurant': 1, 'Cold noodle restaurant': 1,
+                     'Deli': 10, 'Restaurant': 10, 'Italian restaurant': 2,
+                     'Noodle shop': 8, 'Chinese noodle restaurant': 3,
+                     'Dumpling restaurant': 2, 'Cantonese restaurant': 4,
+                     'Porridge restaurant': 1, 'Taiwanese restaurant': 4,
+                     'Hong Kong style fast food restaurant': 3, 'Mandarin restaurant': 4}
 
 
 @bp.route('/user_input', methods=('GET', 'POST'))
@@ -39,13 +41,6 @@ def user_input():
             categories = [parameters['manual']]
         else:
             # sort categories according to weight
-            categories_weight = {'Chinese restaurant': 3, 'Chicken restaurant': 2,
-                                 'Ramen restaurant': 1, 'Cold noodle restaurant': 1,
-                                 'Deli': 10, 'Restaurant': 10, 'Italian restaurant': 2,
-                                 'Noodle shop': 8, 'Chinese noodle restaurant': 3,
-                                 'Dumpling restaurant': 2, 'Cantonese restaurant': 4,
-                                 'Porridge restaurant': 1, 'Taiwanese restaurant': 4,
-                                 'Hong Kong style fast food restaurant': 3, 'Mandarin restaurant': 4}
 
             p = np.zeros(len(categories_weight))
             i = 0
@@ -135,13 +130,20 @@ def get_restaurant(parameters, categories):
     return None, None
 
 
+def check_black(name):
+    for black_name in black_name_list:
+        if black_name in name:
+            return False
+    return True
+
+
 def append_restaurant(search_results, parameters, restaurants, max_price, min_price):
     for restaurant in search_results['results']:
         if (restaurant['rating'] >= parameters['star'] and
             restaurant['price_level'] <= max_price and
             restaurant['price_level'] >= min_price and
+            check_black(restaurant['name']) and
                 calculate_distance(parameters['location'], restaurant['geometry']['location']) <= parameters['radius']):
-
             restaurants.append(restaurant)
 
 
@@ -157,4 +159,4 @@ def calculate_distance(location, place):
     lng2 = np.radians(place['lng'])
     lat2 = np.radians(place['lat'])
 
-    return round(r * arccos(cos(lat1) * cos(lat2) * cos(lng1 - lng2) + sin(lat1) * sin(lat2)), 2)
+    return r * arccos(cos(lat1) * cos(lat2) * cos(lng1 - lng2) + sin(lat1) * sin(lat2))

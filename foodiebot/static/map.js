@@ -3,16 +3,13 @@ let marker;
 let geocoder;
 let cityCircle;
 
-let editable = false;
-
-if (login) {
-    editable = true;
-}
+let editable = true;
 
 
 function initMap() {
     map = new google.maps.Map(document.getElementById("map"), {
-        center: { lat: 25.04625, lng: 121.51753 },
+        //center: { lat: 25.04625, lng: 121.51753 }
+        center: myLocation,
         zoom: 15,
         disableDefaultUI: true,
     });

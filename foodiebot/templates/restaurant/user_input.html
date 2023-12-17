@@ -1,11 +1,17 @@
 <head>
     <script>
-        let login = false;
-        {% if g.user %}
-        login = true;
+
+        var myLocation = { lat: 25.04625, lng: 121.51753 };
+
+        {%if session['parameters'] %}
+
+        let lat = {{ session['parameters']['location']['lat'] }};
+        let lng = {{ session['parameters']['location']['lng'] }};
+
+        myLocation = { lat: lat, lng: lng };
+
         {% endif %}
 
-        let myLocation;
         let radius = 500;
 
         const user_input_url = "{{ url_for('restaurant.user_input') }}";
@@ -25,30 +31,7 @@
 
 {% extends 'base.html' %}
 
-
-{% block header %}
-
-<h1>{% block title %}
-    {% if g.user %}
-    登入模式
-    {% else %}
-    訪客模式
-    {% endif %}
-    {% endblock %}</h1>
-
-{% endblock %}
-
-
 {% block content %}
-<p>請在地圖上釘選想搜尋的地點</p>
-{% if not g.user %}
-<p>登入後有更多功能</p>
-{%else %}
-<p>可以在地圖上調控搜尋範圍</p>
-<p>其他參數可以調整價格、人數、星等</p>
-<p>按下<span>抽抽</span>，會至食物管理中隨機抽取食物搜尋</p>
-<p>也可以透過直接搜尋找尋想要的商店類型</p>
-{% endif %}
 
 <p></p>
 
@@ -57,52 +40,44 @@
 <div id="map"></div>
 
 
+
 <p></p>
 
 
-<button class="pure-button" id="otherParamsBtn">其他參數</button>
-<button class="pure-button" id="directSearchBtn">直接搜尋</button>
 
-
-<button class="pure-button pure-button-primary" id="postButton">抽抽！
+<button style="float: right;" class="pure-button pure-button-primary" id="postButton">抽抽！
 </button>
 
 
 
-<form class="pure-form" id="directSearch">
-    <fieldset>
-        <input type="keyword" id="manual" placeholder="想搜尋的類別" />
-    </fieldset>
-</form>
-
 <p></p>
 
 <div id="otherParams">
-    <div class="division" id="money">
-        <i class="fa-solid fa-coins "></i>
-        <input type="checkbox" id="cheap" checked>
-        <label for="cheap">便宜的</label>
-        <input type="checkbox" id="expensive">
-        <label for="expensive">貴的</label>
-    </div>
-    <div class="division" id="people">
-        <i class="fa-solid fa-people-group"></i>
-        <input type="checkbox" id="singlepeople" checked>
-        <label for="singlepeople">自己吃</label>
-        <input type="checkbox" id="manypeople">
-        <label for="manypeople">多人吃</label>
-    </div>
-
-    <div class="division">
-        <i class="fa-solid fa-store"></i>
-        <input type="checkbox" id="open">
-        <label for="open">現在開門</label>
-    </div>
-    <div class="division">
-        <i class="fa-solid fa-star"></i>
-        <input id="star" type="range" min="2.5" max="4.5" value="3" step="0.1" /> <output id="starOutput"></output>星以上
-    </div>
+    <i class="fa-solid fa-dollar-sign"></i>
+    <input type="checkbox" id="cheap" checked>
+    <label for="cheap">便宜</label>
+    <input type="checkbox" id="expensive">
+    <label for="expensive">貴</label>
 </div>
+<div class="division">
+    <i class="fa-solid fa-store"></i>
+    <input type="checkbox" id="open">
+    <label for="open">現在開門</label>
+</div>
+<div class="division">
+    <i class="fa-solid fa-star"></i>
+    <input id="star" type="range" min="2.5" max="4" value="3" step="0.1" /> <output id="starOutput"></output>星以上
+</div>
+
+</div>
+
+<form class="pure-form" id="directSearch">
+    <fieldset>
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="keyword" id="manual" placeholder="直接搜尋" />
+    </fieldset>
+</form>
+
 
 
 {% endblock %}
