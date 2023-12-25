@@ -19,15 +19,28 @@ api_key = 'AIzaSyC5FeD_HmfWXFtg-q1_3U5UXgLGzWXFxQE'
 gmaps = googlemaps.Client(key=api_key)
 
 
-black_name_list = ['星巴客', '八方', '冷凍', '麥當勞', '肯德基']
+black_name_list = ['星巴客', '八方', '冷凍', '麥當勞', '肯德基', '路易', '85度C', 'すき家']
 
-categories_weight = {'Chinese restaurant': 3, 'Chicken restaurant': 2,
-                     'Ramen restaurant': 1, 'Cold noodle restaurant': 1,
-                     'Deli': 10, 'Restaurant': 10, 'Italian restaurant': 2,
-                     'Noodle shop': 8, 'Chinese noodle restaurant': 3,
-                     'Dumpling restaurant': 2, 'Cantonese restaurant': 4,
-                     'Porridge restaurant': 1, 'Taiwanese restaurant': 4,
-                     'Hong Kong style fast food restaurant': 3, 'Mandarin restaurant': 4}
+categories_weight = {'Chinese restaurant': 3,
+                     'Chicken restaurant': 2,
+                     'Ramen restaurant': 1,
+                     'Cold noodle restaurant': 1,
+                     'Southeast Asian restaurant': 1,
+                     'Deli': 10,
+                     'Restaurant': 10,
+                     'Italian restaurant': 2,
+                     'Noodle shop': 8,
+                     'Chinese noodle restaurant': 3,
+                     'Dumpling restaurant': 2,
+                     'Cantonese restaurant': 4,
+                     'Porridge restaurant': 1,
+                     'Taiwanese restaurant': 4,
+                     'Hong Kong style fast food restaurant': 3,
+                     'Mandarin restaurant': 4,
+                     'Meat dish restaurant': 3,
+                     'Japanese curry restaurant': 1,
+                     'Thai restaurant': 2,
+                     'Chop bar': 3}
 
 
 @bp.route('/user_input', methods=('GET', 'POST'))

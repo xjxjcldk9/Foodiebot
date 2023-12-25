@@ -3,6 +3,9 @@
 
         var myLocation = { lat: 25.04625, lng: 121.51753 };
 
+
+
+
         {%if session['parameters'] %}
 
         let lat = {{ session['parameters']['location']['lat'] }};
@@ -54,19 +57,21 @@
 
 <div id="otherParams">
     <i class="fa-solid fa-dollar-sign"></i>
-    <input type="checkbox" id="cheap" checked>
+    <input type="checkbox" id="cheap" {%if session['parameters']['cheap'] %}checked{%endif%}>
     <label for="cheap">便宜</label>
-    <input type="checkbox" id="expensive">
+    <input type="checkbox" id="expensive" {%if session['parameters']['expensive'] %}checked{%endif%}>
     <label for="expensive">貴</label>
 </div>
 <div class="division">
     <i class="fa-solid fa-store"></i>
-    <input type="checkbox" id="open">
+    <input type="checkbox" id="open" {%if session['parameters']['open'] %}checked{%endif%}>
     <label for="open">現在開門</label>
 </div>
 <div class="division">
     <i class="fa-solid fa-star"></i>
-    <input id="star" type="range" min="2.5" max="4" value="3" step="0.1" /> <output id="starOutput"></output>星以上
+    <input id="star" type="range" min="2.5" max="4"
+        value="{%if session['parameters']['star'] %}{{session['parameters']['star']}}{%else%} 3{%endif%}" step="0.1" />
+    <output id="starOutput"></output>星以上
 </div>
 
 </div>
@@ -74,7 +79,7 @@
 <form class="pure-form" id="directSearch">
     <fieldset>
         <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="keyword" id="manual" placeholder="直接搜尋" />
+        <input type="keyword" id="manual" placeholder="直接搜尋" value="{{session['parameters']['manual']}}" />
     </fieldset>
 </form>
 
