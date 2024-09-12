@@ -1,46 +1,26 @@
-from numpy import sin, cos, arccos
-from retry import retry
-import numpy as np
-import googlemaps
-
-import time
 import json
-import secrets
+import time
 
-from flask import (
-    Blueprint, flash, g, redirect, render_template, request, session, url_for
-)
-
+import googlemaps
+import numpy as np
+from flask import (Blueprint, redirect, render_template, request, session,
+                   url_for)
+from numpy import arccos, cos, sin
+from retry import retry
 
 bp = Blueprint('restaurant', __name__, url_prefix='/restaurant')
 
-
+# TODO: 家裡死人
 api_key = 'AIzaSyC5FeD_HmfWXFtg-q1_3U5UXgLGzWXFxQE'
 gmaps = googlemaps.Client(key=api_key)
 
 
-black_name_list = ['星巴客', '八方', '冷凍', '麥當勞', '肯德基', '路易', '85度C', 'すき家']
+black_name_list = ['星巴客', '八方', '冷凍',
+                   '麥當勞', '肯德基', '路易',
+                   '85度C', 'すき家']
 
-categories_weight = {'Chinese restaurant': 3,
-                     'Chicken restaurant': 2,
-                     'Ramen restaurant': 1,
-                     'Cold noodle restaurant': 1,
-                     'Southeast Asian restaurant': 1,
-                     'Deli': 10,
-                     'Restaurant': 10,
-                     'Italian restaurant': 2,
-                     'Noodle shop': 8,
-                     'Chinese noodle restaurant': 3,
-                     'Dumpling restaurant': 2,
-                     'Cantonese restaurant': 4,
-                     'Porridge restaurant': 1,
-                     'Taiwanese restaurant': 4,
-                     'Hong Kong style fast food restaurant': 3,
-                     'Mandarin restaurant': 4,
-                     'Meat dish restaurant': 3,
-                     'Japanese curry restaurant': 1,
-                     'Thai restaurant': 2,
-                     'Chop bar': 3}
+categories_weight = {'Deli': 10,
+                     'Restaurant': 10}
 
 
 @bp.route('/user_input', methods=('GET', 'POST'))
@@ -64,10 +44,8 @@ def user_input():
 
             p /= p.sum()
 
-            rng = np.random.default_rng(secrets.randbits(128))
-
-            categories = rng.choice(categories, size=len(
-                categories), replace=False, p=p)
+            categories = np.random.choice(
+                categories, size=len(categories), replace=False, p=p)
 
         category, result = get_restaurant(parameters, categories)
 
@@ -128,7 +106,7 @@ def get_restaurant(parameters, categories):
         append_restaurant(search_results, parameters,
                           restaurants, max_price, min_price)
 
-        while search_results.get('next_page_token'):
+        if search_results.get('next_page_token'):
             time.sleep(2)
             places_params['page_token'] = search_results.get('next_page_token')
             search_results = gmaps.places(**places_params)
@@ -136,8 +114,7 @@ def get_restaurant(parameters, categories):
                               restaurants, max_price, min_price)
 
         if len(restaurants) > 0:
-            rng = np.random.default_rng(secrets.randbits(128))
-            result = rng.choice(restaurants, size=1)[0]
+            result = np.random.choice(restaurants, size=1)[0]
             return category, result
 
     return None, None
