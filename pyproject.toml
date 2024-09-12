@@ -1,0 +1,23 @@
+[project]
+name = "foodiebot"
+version = "1.0.0"
+description = "A restaurant choosing app."
+dependencies = [
+    'Flask >= 2.3.2',
+    'numpy >= 1.25.0',
+    'googlemaps >= 4.10.0',
+    'retry >= 0.9.2',
+    'PyJWT >= 2.8.0'
+]
+
+[build-system]
+requires = ["flit_core<4"]
+build-backend = "flit_core.buildapi"
+
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.coverage.run]
+branch = true
+source = ["foodiebot"]
