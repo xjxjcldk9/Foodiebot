@@ -7,23 +7,21 @@ from flask import (Blueprint, redirect, render_template, request, session,
                    url_for)
 from numpy import arccos, cos, sin
 from retry import retry
+from dotenv import load_dotenv
+import os
 
-bp = Blueprint('restaurant', __name__, url_prefix='/restaurant')
+load_dotenv()
 
-# TODO: 家裡死人
-api_key = 'AIzaSyC5FeD_HmfWXFtg-q1_3U5UXgLGzWXFxQE'
-gmaps = googlemaps.Client(key=api_key)
+bp = Blueprint('restaurant', __name__)
 
+gmaps = googlemaps.Client(key=os.getenv('APIKEY'))
 
-black_name_list = ['星巴客', '八方', '冷凍',
-                   '麥當勞', '肯德基', '路易',
-                   '85度C', 'すき家']
+black_name_list = ['星巴客', '八方', '冷凍', '麥當勞', '肯德基', '路易', '85度C', 'すき家']
 
-categories_weight = {'Deli': 10,
-                     'Restaurant': 10}
+categories_weight = {'Deli': 10, 'Restaurant': 10}
 
 
-@bp.route('/user_input', methods=('GET', 'POST'))
+@bp.route('/', methods=('GET', 'POST'))
 def user_input():
     if request.method == 'POST':
         parameters = json.loads(request.form['parameters'])
@@ -44,8 +42,10 @@ def user_input():
 
             p /= p.sum()
 
-            categories = np.random.choice(
-                categories, size=len(categories), replace=False, p=p)
+            categories = np.random.choice(categories,
+                                          size=len(categories),
+                                          replace=False,
+                                          p=p)
 
         category, result = get_restaurant(parameters, categories)
 
@@ -56,22 +56,22 @@ def user_input():
             session['result'] = result
             return redirect(url_for('restaurant.show_result'))
 
-    return render_template('restaurant/user_input.html')
+    return render_template('user_input.html')
 
 
 @bp.route('/test')
 def test():
-    return render_template('restaurant/test.html')
+    return render_template('test.html')
 
 
 @bp.route('/error')
 def error():
-    return render_template('restaurant/error.html')
+    return render_template('error.html')
 
 
 @bp.route('/show_result', methods=('GET', 'POST'))
 def show_result():
-    return render_template('restaurant/show_result.html')
+    return render_template('show_result.html')
 
 
 @retry((Exception), tries=3, delay=2, backoff=0)
@@ -103,15 +103,15 @@ def get_restaurant(parameters, categories):
 
         search_results = gmaps.places(**places_params)
 
-        append_restaurant(search_results, parameters,
-                          restaurants, max_price, min_price)
+        append_restaurant(search_results, parameters, restaurants, max_price,
+                          min_price)
 
         if search_results.get('next_page_token'):
             time.sleep(2)
             places_params['page_token'] = search_results.get('next_page_token')
             search_results = gmaps.places(**places_params)
-            append_restaurant(search_results, parameters,
-                              restaurants, max_price, min_price)
+            append_restaurant(search_results, parameters, restaurants,
+                              max_price, min_price)
 
         if len(restaurants) > 0:
             result = np.random.choice(restaurants, size=1)[0]
@@ -127,13 +127,15 @@ def check_black(name):
     return True
 
 
-def append_restaurant(search_results, parameters, restaurants, max_price, min_price):
+def append_restaurant(search_results, parameters, restaurants, max_price,
+                      min_price):
     for restaurant in search_results['results']:
-        if (restaurant['rating'] >= parameters['star'] and
-            restaurant['price_level'] <= max_price and
-            restaurant['price_level'] >= min_price and
-            check_black(restaurant['name']) and
-                calculate_distance(parameters['location'], restaurant['geometry']['location']) <= parameters['radius']):
+        if (restaurant['rating'] >= parameters['star']
+                and restaurant['price_level'] <= max_price
+                and restaurant['price_level'] >= min_price
+                and check_black(restaurant['name']) and calculate_distance(
+                    parameters['location'], restaurant['geometry']['location'])
+                <= parameters['radius']):
             restaurants.append(restaurant)
 
 
@@ -149,4 +151,5 @@ def calculate_distance(location, place):
     lng2 = np.radians(place['lng'])
     lat2 = np.radians(place['lat'])
 
-    return r * arccos(cos(lat1) * cos(lat2) * cos(lng1 - lng2) + sin(lat1) * sin(lat2))
+    return r * arccos(
+        cos(lat1) * cos(lat2) * cos(lng1 - lng2) + sin(lat1) * sin(lat2))
